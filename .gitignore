@@ -4,7 +4,7 @@
 neck-logic/node_modules/
 
 # Expo
-.expo/
+neck-logic/.expo/
 dist/
 web-build/
 expo-env.d.ts
