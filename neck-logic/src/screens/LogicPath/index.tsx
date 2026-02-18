@@ -2,12 +2,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Lock } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { usePath } from '../../hooks/usePath';
 import { useAuth } from '../../contexts/AuthContext';
 import { styles, getNodeTheme } from './styles';
+import { RootStackParamList } from '../../navigation/Routes';
+
+type LogicPathScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LogicPath'>;
 
 export default function LogicPathScreen() {
+    const navigation = useNavigation<LogicPathScreenNavigationProp>();
     const { modules, loading } = usePath();
     const { signOut } = useAuth();
 
@@ -54,6 +60,10 @@ export default function LogicPathScreen() {
                                         disabled={!isClickable}
                                         activeOpacity={0.7}
                                         className={`${styles.nodeBase} ${theme.bgClass}`}
+                                        onPress={() => navigation.navigate('Lesson', {
+                                            moduleId: node.id,
+                                            title: node.title
+                                        })}
                                     >
                                         {node.status === 'COMPLETED' ? (
                                             <Check size={28} color={theme.iconColor} strokeWidth={3} />
