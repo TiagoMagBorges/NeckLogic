@@ -8,15 +8,23 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
 import LogicPathScreen from '../screens/LogicPath';
+import LessonScreen from '../screens/Lesson';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+    Login: undefined;
+    Register: undefined;
+    LogicPath: undefined;
+    Lesson: { moduleId: number; title: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Routes() {
     const { signed, loading } = useAuth();
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#09090B' }}>
                 <ActivityIndicator size="large" color="#00D9FF" />
             </View>
         );
@@ -24,19 +32,17 @@ export default function Routes() {
 
     return (
         <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
-                    headerShown: false,
-                    animation: 'fade'
-                }}
-            >
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {signed ? (
-                    <Stack.Screen name="Home" component={LogicPathScreen} />
+                    <>
+                        <Stack.Screen name="LogicPath" component={LogicPathScreen} />
+                        <Stack.Screen name="Lesson" component={LessonScreen} />
+                    </>
                 ) : (
-                    <Stack.Group screenOptions={{ animation: 'slide_from_right' }}>
+                    <>
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Register" component={RegisterScreen} />
-                    </Stack.Group>
+                    </>
                 )}
             </Stack.Navigator>
         </NavigationContainer>
