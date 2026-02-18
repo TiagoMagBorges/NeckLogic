@@ -3,7 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, Lock, User, Apple, ArrowLeft, Check } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../contexts/AuthContext';
+
+import { useAuth } from '../../contexts/AuthContext';
+import { styles, getCheckboxStyle, getButtonStyle } from './styles';
 
 export default function RegisterScreen() {
     const navigation = useNavigation<any>();
@@ -21,8 +23,7 @@ export default function RegisterScreen() {
         }
 
         try {
-            await signUp({name, email, password});
-
+            await signUp({ name, email, password });
             alert('Account created! You can now login.');
             navigation.navigate('Login');
         } catch (error) {
@@ -31,44 +32,45 @@ export default function RegisterScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className={styles.safeArea}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+                className={styles.keyboardView}
             >
                 <ScrollView
-                    contentContainerStyle={{ flexGrow: 1, padding: 24 }}
+                    contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
                     <TouchableOpacity
                         onPress={() => navigation.goBack()}
                         disabled={loading}
-                        className="flex-row items-center gap-2 mb-8 self-start"
+                        className={styles.backButton}
                     >
                         <ArrowLeft size={18} color="#A1A1AA" />
-                        <Text className="text-sm text-muted-foreground">Back to login</Text>
+                        <Text className={styles.backText}>Back to login</Text>
                     </TouchableOpacity>
 
-                    <View className="items-center mb-12">
-                        <Text className="text-4xl font-bold tracking-tight text-foreground mb-2">
-                            Neck<Text className="text-primary">Logic</Text>
+                    <View className={styles.headerContainer}>
+                        <Text className={styles.title}>
+                            Neck<Text className={styles.titleAccent}>Logic</Text>
                         </Text>
-                        <Text className="text-muted-foreground text-sm">
+                        <Text className={styles.subtitle}>
                             Start your music theory journey
                         </Text>
                     </View>
 
-                    <View className="space-y-6">
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-foreground">Full Name</Text>
-                            <View className="relative justify-center">
-                                <View className="absolute left-4 z-10">
+                    <View className={styles.formContainer}>
+
+                        <View className={styles.inputGroup}>
+                            <Text className={styles.label}>Full Name</Text>
+                            <View className={styles.inputWrapper}>
+                                <View className={styles.iconPosition}>
                                     <User size={18} color="#A1A1AA" />
                                 </View>
                                 <TextInput
                                     placeholder="John Doe"
                                     placeholderTextColor="#A1A1AA"
-                                    className="w-full bg-input-background border border-border rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary"
+                                    className={styles.inputBase}
                                     value={name}
                                     onChangeText={setName}
                                     editable={!loading}
@@ -76,16 +78,16 @@ export default function RegisterScreen() {
                             </View>
                         </View>
 
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-foreground">Email</Text>
-                            <View className="relative justify-center">
-                                <View className="absolute left-4 z-10">
+                        <View className={styles.inputGroup}>
+                            <Text className={styles.label}>Email</Text>
+                            <View className={styles.inputWrapper}>
+                                <View className={styles.iconPosition}>
                                     <Mail size={18} color="#A1A1AA" />
                                 </View>
                                 <TextInput
                                     placeholder="you@example.com"
                                     placeholderTextColor="#A1A1AA"
-                                    className="w-full bg-input-background border border-border rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary"
+                                    className={styles.inputBase}
                                     value={email}
                                     onChangeText={setEmail}
                                     autoCapitalize="none"
@@ -95,16 +97,16 @@ export default function RegisterScreen() {
                             </View>
                         </View>
 
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-foreground">Password</Text>
-                            <View className="relative justify-center">
-                                <View className="absolute left-4 z-10">
+                        <View className={styles.inputGroup}>
+                            <Text className={styles.label}>Password</Text>
+                            <View className={styles.inputWrapper}>
+                                <View className={styles.iconPosition}>
                                     <Lock size={18} color="#A1A1AA" />
                                 </View>
                                 <TextInput
                                     placeholder="••••••••"
                                     placeholderTextColor="#A1A1AA"
-                                    className="w-full bg-input-background border border-border rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary"
+                                    className={styles.inputBase}
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry
@@ -113,25 +115,23 @@ export default function RegisterScreen() {
                             </View>
                         </View>
 
-                        <View className="flex-row items-start gap-3 mt-2">
+                        <View className={styles.termsContainer}>
                             <TouchableOpacity
                                 onPress={() => setTermsAccepted(!termsAccepted)}
                                 disabled={loading}
-                                className={`mt-1 w-5 h-5 rounded border items-center justify-center ${
-                                    termsAccepted ? 'bg-primary border-primary' : 'bg-input-background border-border'
-                                }`}
+                                className={`${styles.checkboxBase} ${getCheckboxStyle(termsAccepted)}`}
                             >
                                 {termsAccepted && <Check size={14} color="#121212" />}
                             </TouchableOpacity>
 
-                            <View className="flex-1 flex-row flex-wrap">
-                                <Text className="text-sm text-muted-foreground">I agree to the </Text>
+                            <View className={styles.termsTextWrapper}>
+                                <Text className={styles.termsText}>I agree to the </Text>
                                 <TouchableOpacity disabled={loading}>
-                                    <Text className="text-sm text-primary font-medium">Terms of Service</Text>
+                                    <Text className={styles.linkText}>Terms of Service</Text>
                                 </TouchableOpacity>
-                                <Text className="text-sm text-muted-foreground"> and </Text>
+                                <Text className={styles.termsText}> and </Text>
                                 <TouchableOpacity disabled={loading}>
-                                    <Text className="text-sm text-primary font-medium">Privacy Policy</Text>
+                                    <Text className={styles.linkText}>Privacy Policy</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -140,46 +140,38 @@ export default function RegisterScreen() {
                             onPress={handleCreateAccount}
                             activeOpacity={0.8}
                             disabled={loading}
-                            className={`w-full py-3 rounded-lg items-center ${loading ? 'bg-primary/60' : 'bg-primary'}`}
+                            className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
                         >
                             {loading ? (
                                 <ActivityIndicator color="#121212" />
                             ) : (
-                                <Text className="text-primary-foreground font-semibold text-base">Create Account</Text>
+                                <Text className={styles.buttonText}>Create Account</Text>
                             )}
                         </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row items-center my-8">
-                        <View className="flex-1 h-[1px] bg-border" />
-                        <Text className="mx-4 text-sm text-muted-foreground">or sign up with</Text>
-                        <View className="flex-1 h-[1px] bg-border" />
+                    <View className={styles.dividerContainer}>
+                        <View className={styles.dividerLine} />
+                        <Text className={styles.dividerText}>or sign up with</Text>
+                        <View className={styles.dividerLine} />
                     </View>
 
-                    <View className="gap-3">
-                        <TouchableOpacity
-                            className="w-full bg-card border border-border py-3 rounded-lg flex-row items-center justify-center gap-3"
-                            activeOpacity={0.7}
-                            disabled={loading}
-                        >
+                    <View className={styles.socialContainer}>
+                        <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
                             <Apple size={20} color="#FFFFFF" />
-                            <Text className="text-foreground font-medium">Sign up with Apple</Text>
+                            <Text className={styles.socialText}>Sign up with Apple</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            className="w-full bg-card border border-border py-3 rounded-lg flex-row items-center justify-center gap-3"
-                            activeOpacity={0.7}
-                            disabled={loading}
-                        >
-                            <Text className="text-foreground font-bold text-lg">G</Text>
-                            <Text className="text-foreground font-medium">Sign up with Google</Text>
+                        <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
+                            <Text className={styles.googleText}>G</Text>
+                            <Text className={styles.socialText}>Sign up with Google</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row justify-center mt-8 mb-4">
-                        <Text className="text-sm text-muted-foreground">Already have an account? </Text>
+                    <View className={styles.footerContainer}>
+                        <Text className={styles.footerText}>Already have an account?</Text>
                         <TouchableOpacity onPress={() => navigation.goBack()} disabled={loading}>
-                            <Text className="text-primary font-medium">Sign in</Text>
+                            <Text className={styles.signInText}>Sign in</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
