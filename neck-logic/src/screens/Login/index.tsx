@@ -13,7 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail, Lock, Apple } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { z } from 'zod';
-import { useAuth } from '../contexts/AuthContext';
+
+import { useAuth } from '../../contexts/AuthContext';
+import { styles, getInputStyle, getButtonStyle } from './styles';
 
 const loginSchema = z.object({
     email: z.email({ message: "Digite um e-mail válido" }),
@@ -37,9 +39,7 @@ export default function LoginScreen() {
             if (error instanceof z.ZodError) {
                 const formattedErrors: { email?: string; password?: string } = {};
                 error.issues.forEach((err) => {
-                    if (err.path[0]) {
-                        formattedErrors[err.path[0] as keyof typeof formattedErrors] = err.message;
-                    }
+                    if (err.path[0]) formattedErrors[err.path[0] as keyof typeof formattedErrors] = err.message;
                 });
                 setErrors(formattedErrors);
             }
@@ -47,37 +47,34 @@ export default function LoginScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className={styles.container}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+                className={styles.keyboardView}
             >
                 <ScrollView
-                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+                    contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-                    <View className="items-center mb-12">
-                        <Text className="text-4xl font-bold tracking-tight text-foreground mb-2">
-                            Neck<Text className="text-primary">Logic</Text>
+                    <View className={styles.headerContainer}>
+                        <Text className={styles.logoText}>
+                            Neck<Text className={styles.logoAccent}>Logic</Text>
                         </Text>
-                        <Text className="text-muted-foreground text-sm">
-                            Master the fretboard with precision
-                        </Text>
+                        <Text className={styles.subtitle}>Master the fretboard with precision</Text>
                     </View>
 
-                    <View className="space-y-6">
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-foreground">Email</Text>
-                            <View className="relative justify-center">
-                                <View className="absolute left-4 z-10">
+                    <View className={styles.formContainer}>
+
+                        <View className={styles.inputGroup}>
+                            <Text className={styles.label}>Email</Text>
+                            <View className={styles.inputWrapper}>
+                                <View className={styles.iconContainer}>
                                     <Mail size={18} color={errors.email ? "#F87171" : "#A1A1AA"} />
                                 </View>
                                 <TextInput
                                     placeholder="you@example.com"
                                     placeholderTextColor="#A1A1AA"
-                                    className={`w-full bg-input-background border rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary ${
-                                        errors.email ? 'border-destructive' : 'border-border'
-                                    }`}
+                                    className={`${styles.inputBase} ${getInputStyle(!!errors.email)}`}
                                     value={email}
                                     onChangeText={(text) => {
                                         setEmail(text);
@@ -88,23 +85,19 @@ export default function LoginScreen() {
                                     editable={!loading}
                                 />
                             </View>
-                            {errors.email && (
-                                <Text className="text-destructive text-xs mt-1">{errors.email}</Text>
-                            )}
+                            {errors.email && <Text className={styles.errorText}>{errors.email}</Text>}
                         </View>
 
-                        <View className="space-y-2">
-                            <Text className="text-sm font-medium text-foreground">Password</Text>
-                            <View className="relative justify-center">
-                                <View className="absolute left-4 z-10">
+                        <View className={styles.inputGroup}>
+                            <Text className={styles.label}>Password</Text>
+                            <View className={styles.inputWrapper}>
+                                <View className={styles.iconContainer}>
                                     <Lock size={18} color={errors.password ? "#F87171" : "#A1A1AA"} />
                                 </View>
                                 <TextInput
                                     placeholder="••••••••"
                                     placeholderTextColor="#A1A1AA"
-                                    className={`w-full bg-input-background border rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary ${
-                                        errors.password ? 'border-destructive' : 'border-border'
-                                    }`}
+                                    className={`${styles.inputBase} ${getInputStyle(!!errors.password)}`}
                                     value={password}
                                     onChangeText={(text) => {
                                         setPassword(text);
@@ -114,55 +107,45 @@ export default function LoginScreen() {
                                     editable={!loading}
                                 />
                             </View>
-                            {errors.password && (
-                                <Text className="text-destructive text-xs mt-1">{errors.password}</Text>
-                            )}
+                            {errors.password && <Text className={styles.errorText}>{errors.password}</Text>}
                         </View>
 
                         <TouchableOpacity
                             onPress={handleLogin}
                             activeOpacity={0.8}
                             disabled={loading}
-                            className={`w-full py-3 rounded-lg items-center ${loading ? 'bg-primary/60' : 'bg-primary'}`}
+                            className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
                         >
                             {loading ? (
                                 <ActivityIndicator color="#121212" />
                             ) : (
-                                <Text className="text-primary-foreground font-semibold text-base">Sign In</Text>
+                                <Text className={styles.buttonText}>Sign In</Text>
                             )}
                         </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row items-center my-8">
-                        <View className="flex-1 h-[1px] bg-border" />
-                        <Text className="mx-4 text-sm text-muted-foreground">or continue with</Text>
-                        <View className="flex-1 h-[1px] bg-border" />
+                    <View className={styles.dividerContainer}>
+                        <View className={styles.dividerLine} />
+                        <Text className={styles.dividerText}>or continue with</Text>
+                        <View className={styles.dividerLine} />
                     </View>
 
-                    <View className="gap-3">
-                        <TouchableOpacity
-                            className="w-full bg-card border border-border py-3 rounded-lg flex-row items-center justify-center gap-3"
-                            activeOpacity={0.7}
-                            disabled={loading}
-                        >
+                    <View className={styles.socialContainer}>
+                        <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
                             <Apple size={20} color="#FFFFFF" />
-                            <Text className="text-foreground font-medium">Continue with Apple</Text>
+                            <Text className={styles.socialText}>Continue with Apple</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            className="w-full bg-card border border-border py-3 rounded-lg flex-row items-center justify-center gap-3"
-                            activeOpacity={0.7}
-                            disabled={loading}
-                        >
-                            <Text className="text-foreground font-bold text-lg">G</Text>
-                            <Text className="text-foreground font-medium">Continue with Google</Text>
+                        <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
+                            <Text className={styles.googleIcon}>G</Text>
+                            <Text className={styles.socialText}>Continue with Google</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <View className="flex-row justify-center mt-8 mb-4">
-                        <Text className="text-sm text-muted-foreground">Don't have an account? </Text>
+                    <View className={styles.footerContainer}>
+                        <Text className={styles.footerText}>Don't have an account?</Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Register')} disabled={loading}>
-                            <Text className="text-primary font-medium">Sign up</Text>
+                            <Text className={styles.signupText}>Sign up</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
