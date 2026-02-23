@@ -17,15 +17,10 @@ export default function RegisterScreen() {
     const [termsAccepted, setTermsAccepted] = useState(false);
 
     async function handleCreateAccount() {
-        if (!termsAccepted) {
-            alert('Please accept the terms');
-            return;
-        }
+        if (!termsAccepted) return;
 
         try {
             await signUp({ name, email, password });
-            alert('Account created! You can now login.');
-            navigation.navigate('Login');
         } catch (error) {
             console.error(error);
         }
@@ -60,7 +55,6 @@ export default function RegisterScreen() {
                     </View>
 
                     <View className={styles.formContainer}>
-
                         <View className={styles.inputGroup}>
                             <Text className={styles.label}>Full Name</Text>
                             <View className={styles.inputWrapper}>
@@ -139,7 +133,7 @@ export default function RegisterScreen() {
                         <TouchableOpacity
                             onPress={handleCreateAccount}
                             activeOpacity={0.8}
-                            disabled={loading}
+                            disabled={loading || !termsAccepted}
                             className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
                         >
                             {loading ? (

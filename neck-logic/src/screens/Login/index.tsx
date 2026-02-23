@@ -64,7 +64,6 @@ export default function LoginScreen() {
                     </View>
 
                     <View className={styles.formContainer}>
-
                         <View className={styles.inputGroup}>
                             <Text className={styles.label}>Email</Text>
                             <View className={styles.inputWrapper}>
