@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { api } from '../services/api';
-import { ModuleDTO } from '../@types/Module';
+import { ModuleDTO } from '../types/Module';
 
 export function usePath() {
     const [modules, setModules] = useState<ModuleDTO[]>([]);
@@ -20,9 +21,11 @@ export function usePath() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchPath();
-    }, [fetchPath]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchPath();
+        }, [fetchPath])
+    );
 
     return {
         modules,

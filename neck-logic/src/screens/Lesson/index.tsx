@@ -1,109 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 
-import { api } from '../../services/api';
-import { LessonContentDTO, LessonStep } from '../../@types/Lesson';
-import { RootStackParamList } from '../../navigation/Routes';
 import { styles, getProgressStyle } from './styles';
 import { Fretboard, FretboardNote } from '../../components/Fretboard';
 import { getNoteAtFret, TUNINGS } from '../../core/MusicEngine';
-
-type LessonScreenRouteProp = RouteProp<RootStackParamList, 'Lesson'>;
+import { useLesson } from '../../hooks/useLesson';
 
 export default function LessonScreen() {
-    const navigation = useNavigation();
-    const route = useRoute<LessonScreenRouteProp>();
-    const { moduleId } = route.params;
+    const {
+        loading,
+        isSaving,
+        steps,
+        currentStep,
+        currentStepIndex,
+        selectedFret,
+        checkResult,
+        handleAction,
+        handleFretPress,
+        goBack
+    } = useLesson();
 
-    const [loading, setLoading] = useState(true);
-    const [steps, setSteps] = useState<LessonStep[]>([]);
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
-
-    const [selectedFret, setSelectedFret] = useState<{ string: number; fret: number } | null>(null);
-    const [checkResult, setCheckResult] = useState<'IDLE' | 'CORRECT' | 'INCORRECT'>('IDLE');
-
-    useEffect(() => {
-        fetchContent();
-    }, []);
-
-    async function fetchContent() {
-        try {
-            const response = await api.get<LessonContentDTO>(`/modules/${moduleId}/content`);
-            const parsedSteps = JSON.parse(response.data.contentJson);
-
-            if (Array.isArray(parsedSteps) && parsedSteps.length > 0) {
-                setSteps(parsedSteps);
-            } else {
-                Alert.alert("Aviso", "Esta aula ainda não tem conteúdo.");
-                navigation.goBack();
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert("Erro", "Falha ao carregar a aula.");
-            navigation.goBack();
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    function handleAction() {
-        const currentStep = steps[currentStepIndex];
-
-        if (currentStep.type === 'DRILL') {
-            if (checkResult === 'IDLE') {
-                if (!selectedFret) return;
-
-                const openNote = TUNINGS.STANDARD[selectedFret.string - 1];
-                const clickedNoteName = getNoteAtFret(openNote, selectedFret.fret);
-                const target = currentStep.targetNote || '';
-
-                if (clickedNoteName.toUpperCase() === target.toUpperCase()) {
-                    setCheckResult('CORRECT');
-                } else {
-                    setCheckResult('INCORRECT');
-                }
-                return;
-            }
-
-            if (checkResult === 'INCORRECT') {
-                setSelectedFret(null);
-                setCheckResult('IDLE');
-                return;
-            }
-        }
-
-        if (currentStepIndex < steps.length - 1) {
-            setCurrentStepIndex(currentStepIndex + 1);
-            setSelectedFret(null);
-            setCheckResult('IDLE');
-        } else {
-            Alert.alert("Parabéns!", "Aula concluída.", [
-                { text: "OK", onPress: () => navigation.goBack() }
-            ]);
-        }
-    }
-
-    function handleFretPress(stringNum: number, fretNum: number) {
-        const currentStep = steps[currentStepIndex];
-
-        if (currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
-
-        setCheckResult('IDLE');
-        setSelectedFret({ string: stringNum, fret: fretNum });
-    }
-
-    if (loading) {
+    if (loading || !currentStep) {
         return (
             <View className="flex-1 bg-background justify-center items-center">
                 <ActivityIndicator size="large" color="#00D9FF" />
             </View>
         );
     }
-
-    const currentStep = steps[currentStepIndex];
 
     const notesToRender: FretboardNote[] = [];
     if (selectedFret) {
@@ -141,7 +66,7 @@ export default function LessonScreen() {
     return (
         <SafeAreaView className={styles.safeArea}>
             <View className={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} className={styles.closeButton}>
+                <TouchableOpacity onPress={goBack} className={styles.closeButton}>
                     <X size={24} color="#A1A1AA" />
                 </TouchableOpacity>
 
@@ -187,14 +112,18 @@ export default function LessonScreen() {
 
             <View className={styles.footer}>
                 <TouchableOpacity
-                    className={`${styles.nextButton} ${isButtonDisabled ? 'opacity-50' : 'opacity-100'}`}
+                    className={`${styles.nextButton} ${isButtonDisabled || isSaving ? 'opacity-50' : 'opacity-100'}`}
                     onPress={handleAction}
                     activeOpacity={0.8}
-                    disabled={isButtonDisabled}
+                    disabled={isButtonDisabled || isSaving}
                 >
-                    <Text className={styles.nextButtonText}>
-                        {buttonText}
-                    </Text>
+                    {isSaving ? (
+                        <ActivityIndicator color="#121212" />
+                    ) : (
+                        <Text className={styles.nextButtonText}>
+                            {buttonText}
+                        </Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

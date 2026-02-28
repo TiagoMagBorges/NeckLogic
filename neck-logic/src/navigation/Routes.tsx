@@ -9,10 +9,12 @@ import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
 import LogicPathScreen from '../screens/LogicPath';
 import LessonScreen from '../screens/Lesson';
+import OnboardingScreen from '../screens/Onboarding';
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
+    Onboarding: undefined;
     LogicPath: undefined;
     Lesson: { moduleId: number; title: string };
 };
@@ -20,7 +22,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Routes() {
-    const { signed, loading } = useAuth();
+    const { signed, loading, onboardingCompleted } = useAuth();
 
     if (loading) {
         return (
@@ -34,10 +36,14 @@ export default function Routes() {
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {signed ? (
-                    <>
-                        <Stack.Screen name="LogicPath" component={LogicPathScreen} />
-                        <Stack.Screen name="Lesson" component={LessonScreen} />
-                    </>
+                    onboardingCompleted ? (
+                        <>
+                            <Stack.Screen name="LogicPath" component={LogicPathScreen} />
+                            <Stack.Screen name="Lesson" component={LessonScreen} />
+                        </>
+                    ) : (
+                        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+                    )
                 ) : (
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />
