@@ -6,4 +6,7 @@ export interface ModuleDTO {
     orderIndex: number;
     status: ModuleStatus;
     percentage: number;
+    sectionId: number;
+    sectionTitle: string;
+    sectionDescription: string;
 }
