@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { LessonContentDTO, LessonStep } from '../types/Lesson';
 import { RootStackParamList } from '../navigation/Routes';
 import { getNoteAtFret, TUNINGS } from '../core/MusicEngine';
+import { useAuth } from '../contexts/AuthContext';
 
 type LessonScreenRouteProp = RouteProp<RootStackParamList, 'Lesson'>;
 
@@ -13,14 +14,16 @@ export function useLesson() {
     const navigation = useNavigation<any>();
     const route = useRoute<LessonScreenRouteProp>();
     const { moduleId } = route.params;
+    const { updateUserProgress } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [steps, setSteps] = useState<LessonStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-    const [selectedFret, setSelectedFret] = useState<{ string: number; fret: number } | null>(null);
+    const [selectedFrets, setSelectedFrets] = useState<{ string: number; fret: number }[]>([]);
     const [checkResult, setCheckResult] = useState<'IDLE' | 'CORRECT' | 'INCORRECT'>('IDLE');
+    const [mistakesCount, setMistakesCount] = useState(0);
 
     useEffect(() => {
         fetchContent();
@@ -38,7 +41,6 @@ export function useLesson() {
                 navigation.goBack();
             }
         } catch (error) {
-            console.error(error);
             Alert.alert("Erro", "Falha ao carregar a aula.");
             navigation.goBack();
         } finally {
@@ -51,22 +53,44 @@ export function useLesson() {
 
         if (currentStep.type === 'DRILL') {
             if (checkResult === 'IDLE') {
-                if (!selectedFret) return;
+                if (selectedFrets.length === 0) return;
 
-                const openNote = TUNINGS.STANDARD[selectedFret.string - 1];
-                const clickedNoteName = getNoteAtFret(openNote, selectedFret.fret);
-                const target = currentStep.targetNote || '';
+                let isCorrect = false;
 
-                if (clickedNoteName.toUpperCase() === target.toUpperCase()) {
-                    setCheckResult('CORRECT');
-                } else {
-                    setCheckResult('INCORRECT');
+                if (currentStep.targetShape && currentStep.targetShape.length > 0) {
+                    if (selectedFrets.length === currentStep.targetShape.length) {
+                        isCorrect = currentStep.targetShape.every(target =>
+                            selectedFrets.some(sel => sel.string === target.string && sel.fret === target.fret)
+                        );
+                    }
+                } else if (currentStep.targetNotes && currentStep.targetNotes.length > 0) {
+                    const selectedNoteNames = selectedFrets.map(f =>
+                        getNoteAtFret(TUNINGS.STANDARD[f.string - 1], f.fret).toUpperCase()
+                    );
+                    const targets = currentStep.targetNotes.map(n => n.toUpperCase());
+
+                    const allSelectedValid = selectedNoteNames.every(n => targets.includes(n));
+                    const allTargetsFound = targets.every(t => selectedNoteNames.includes(t));
+
+                    isCorrect = allSelectedValid && allTargetsFound;
+                } else if (currentStep.targetNote) {
+                    if (selectedFrets.length === 1) {
+                        const openNote = TUNINGS.STANDARD[selectedFrets[0].string - 1];
+                        const clickedNoteName = getNoteAtFret(openNote, selectedFrets[0].fret);
+                        isCorrect = clickedNoteName.toUpperCase() === currentStep.targetNote.toUpperCase();
+                    }
                 }
+
+                if (!isCorrect) {
+                    setMistakesCount(prev => prev + 1);
+                }
+
+                setCheckResult(isCorrect ? 'CORRECT' : 'INCORRECT');
                 return;
             }
 
             if (checkResult === 'INCORRECT') {
-                setSelectedFret(null);
+                setSelectedFrets([]);
                 setCheckResult('IDLE');
                 return;
             }
@@ -74,16 +98,28 @@ export function useLesson() {
 
         if (currentStepIndex < steps.length - 1) {
             setCurrentStepIndex(currentStepIndex + 1);
-            setSelectedFret(null);
+            setSelectedFrets([]);
             setCheckResult('IDLE');
         } else {
             try {
                 setIsSaving(true);
-                await api.post(`/modules/${moduleId}/complete`);
-                navigation.navigate('LogicPath');
+                const response = await api.post(`/modules/${moduleId}/complete`, { mistakesCount });
+
+                const { totalXp, currentLevel, leveledUp, xpGained } = response.data;
+
+                await updateUserProgress(totalXp, currentLevel);
+
+                const drillCount = steps.filter(s => s.type === 'DRILL').length;
+
+                navigation.replace('LessonFeedback', {
+                    xpGained,
+                    leveledUp,
+                    currentLevel,
+                    mistakesCount,
+                    drillCount
+                });
 
             } catch (error: any) {
-                console.error("Erro na API:", error?.response?.data || error.message);
                 Alert.alert("Erro", "Não foi possível salvar o progresso.");
             } finally {
                 setIsSaving(false);
@@ -97,7 +133,24 @@ export function useLesson() {
         if (currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
 
         setCheckResult('IDLE');
-        setSelectedFret({ string: stringNum, fret: fretNum });
+
+        const isSingleSelection = !!currentStep.targetNote ||
+            currentStep.targetShape?.length === 1 ||
+            currentStep.targetNotes?.length === 1;
+
+        setSelectedFrets(prev => {
+            const exists = prev.find(p => p.string === stringNum && p.fret === fretNum);
+
+            if (exists) {
+                return prev.filter(p => p.string !== stringNum || p.fret !== fretNum);
+            }
+
+            if (isSingleSelection) {
+                return [{ string: stringNum, fret: fretNum }];
+            }
+
+            return [...prev, { string: stringNum, fret: fretNum }];
+        });
     }
 
     function goBack() {
@@ -110,7 +163,7 @@ export function useLesson() {
         steps,
         currentStep: steps[currentStepIndex],
         currentStepIndex,
-        selectedFret,
+        selectedFrets,
         checkResult,
         handleAction,
         handleFretPress,

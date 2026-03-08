@@ -6,12 +6,19 @@ export const styles = {
     contentContainer: "w-full max-w-md self-center",
     scrollContent: { padding: 24, paddingBottom: 100 },
 
-    headerContainer: "mb-12 relative flex-row justify-center items-center",
+    headerContainer: "mb-8 relative flex-row justify-center items-center",
     headerTexts: "items-center",
     title: "text-3xl font-bold text-foreground text-center",
     subtitle: "text-muted-foreground text-sm text-center",
     logoutButton: "absolute right-0 p-2",
     logoutText: "text-destructive text-xs",
+
+    levelCard: "w-full bg-card border border-border/10 rounded-2xl p-5 mb-10 shadow-sm",
+    levelHeader: "flex-row justify-between items-end mb-3",
+    levelText: "text-primary font-bold text-2xl tracking-tight",
+    xpText: "text-muted-foreground text-sm font-semibold",
+    progressBarBg: "h-2 w-full bg-muted/20 rounded-full overflow-hidden",
+    progressBarFill: "h-full bg-primary rounded-full",
 
     pathWrapper: "relative",
     verticalLine: "absolute left-[31px] top-10 bottom-10 w-[2px] bg-muted/20",

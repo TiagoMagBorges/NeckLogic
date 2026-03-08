@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 
 import { styles, getProgressStyle } from './styles';
 import { Fretboard, FretboardNote } from '../../components/Fretboard';
-import { getNoteAtFret, TUNINGS } from '../../core/MusicEngine';
+import { getNoteAtFret, getFretboardPositionsForNotes, TUNINGS } from '../../core/MusicEngine';
 import { useLesson } from '../../hooks/useLesson';
 
 export default function LessonScreen() {
@@ -15,12 +15,57 @@ export default function LessonScreen() {
         steps,
         currentStep,
         currentStepIndex,
-        selectedFret,
+        selectedFrets,
         checkResult,
         handleAction,
         handleFretPress,
         goBack
     } = useLesson();
+
+    const notesToRender = useMemo(() => {
+        let notes: FretboardNote[] = [];
+        const config = currentStep?.fretboardConfig;
+
+        if (config) {
+            if (config.explicitNotes) {
+                notes = [...notes, ...config.explicitNotes];
+            }
+            if (config.highlightNotes && config.highlightNotes.length > 0) {
+                notes = [
+                    ...notes,
+                    ...getFretboardPositionsForNotes(
+                        config.highlightNotes,
+                        config.tuning || TUNINGS.STANDARD,
+                        config.frets || 22
+                    )
+                ];
+            }
+        }
+
+        if (selectedFrets.length > 0) {
+            selectedFrets.forEach(selectedFret => {
+                let color = '#00D9FF';
+                let label: string | undefined = undefined;
+
+                if (checkResult === 'CORRECT') {
+                    color = '#10B981';
+                    label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
+                } else if (checkResult === 'INCORRECT') {
+                    color = '#EF4444';
+                    label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
+                }
+
+                notes.push({
+                    string: selectedFret.string,
+                    fret: selectedFret.fret,
+                    color,
+                    label
+                });
+            });
+        }
+
+        return notes;
+    }, [currentStep, selectedFrets, checkResult]);
 
     if (loading || !currentStep) {
         return (
@@ -30,38 +75,20 @@ export default function LessonScreen() {
         );
     }
 
-    const notesToRender: FretboardNote[] = [];
-    if (selectedFret) {
-        let color = '#00D9FF';
-        let label: string | undefined = undefined;
-
-        if (checkResult === 'CORRECT') {
-            color = '#10B981';
-            label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
-        } else if (checkResult === 'INCORRECT') {
-            color = '#EF4444';
-            label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
-        }
-
-        notesToRender.push({
-            string: selectedFret.string,
-            fret: selectedFret.fret,
-            color,
-            label
-        });
-    }
-
     let buttonText = currentStepIndex === steps.length - 1 ? 'Concluir' : 'Próximo';
     let isButtonDisabled = false;
 
     if (currentStep.type === 'DRILL') {
         if (checkResult === 'IDLE') {
             buttonText = 'Conferir';
-            isButtonDisabled = !selectedFret;
+            isButtonDisabled = selectedFrets.length === 0;
         } else if (checkResult === 'INCORRECT') {
             buttonText = 'Tentar Novamente';
         }
     }
+
+    const showFretboard = currentStep.type === 'DRILL' || !!currentStep.fretboardConfig;
+    const displayFrets = Math.max(12, currentStep.fretboardConfig?.frets ?? 22);
 
     return (
         <SafeAreaView className={styles.safeArea}>
@@ -91,19 +118,25 @@ export default function LessonScreen() {
 
                 <Text className={styles.title}>{currentStep.title}</Text>
 
-                {currentStep.type === 'THEORY' ? (
+                {currentStep.text && (
                     <Text className={styles.bodyText}>{currentStep.text}</Text>
-                ) : (
+                )}
+
+                {showFretboard && (
                     <View className="w-full mt-4">
-                        <Text className="text-primary text-center text-xl font-bold mb-6">
-                            {currentStep.question}
-                        </Text>
+                        {currentStep.question && (
+                            <Text className="text-primary text-center text-xl font-bold mb-6">
+                                {currentStep.question}
+                            </Text>
+                        )}
 
                         <View style={{ marginHorizontal: -24 }}>
                             <Fretboard
-                                frets={22}
+                                key={`step-${currentStepIndex}`}
+                                frets={displayFrets}
                                 notes={notesToRender}
-                                onFretPress={handleFretPress}
+                                onFretPress={currentStep.type === 'DRILL' ? handleFretPress : undefined}
+                                autoScroll={currentStep.type === 'THEORY'}
                             />
                         </View>
                     </View>

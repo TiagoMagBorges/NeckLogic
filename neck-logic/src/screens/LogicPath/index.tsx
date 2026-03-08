@@ -16,7 +16,7 @@ type LogicPathScreenNavigationProp = NativeStackNavigationProp<RootStackParamLis
 export default function LogicPathScreen() {
     const navigation = useNavigation<LogicPathScreenNavigationProp>();
     const { modules, loading, refetch } = usePath();
-    const { signOut } = useAuth();
+    const { signOut, xp, level } = useAuth();
 
     const [skipModalVisible, setSkipModalVisible] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
@@ -50,9 +50,15 @@ export default function LogicPathScreen() {
     const currentCount = modules.filter(m => m.status === 'CURRENT').length;
     const lockedCount = modules.filter(m => m.status === 'LOCKED').length;
 
+    const currentLevelBaseXp = Math.pow(10 * (level - 1), 2);
+    const nextLevelXp = Math.pow(10 * level, 2);
+    const xpInCurrentLevel = xp - currentLevelBaseXp;
+    const xpRequiredForNextLevel = nextLevelXp - currentLevelBaseXp;
+    const xpPercentage = Math.min(100, Math.max(0, (xpInCurrentLevel / xpRequiredForNextLevel) * 100));
+
     const handleSkipSection = async () => {
         if (!selectedSection?.id) {
-            Alert.alert("Aviso", "O ID desta seção não foi encontrado. Atualize o Backend para retornar o sectionId.");
+            Alert.alert("Aviso", "O ID desta seção não foi encontrado.");
             return;
         }
 
@@ -62,7 +68,6 @@ export default function LogicPathScreen() {
             setSkipModalVisible(false);
             if (refetch) refetch();
         } catch (error) {
-            console.error(error);
             Alert.alert("Erro", "Não foi possível pular esta seção.");
         } finally {
             setIsSkipping(false);
@@ -90,6 +95,19 @@ export default function LogicPathScreen() {
                         <TouchableOpacity onPress={signOut} className={styles.logoutButton}>
                             <Text className={styles.logoutText}>Sair</Text>
                         </TouchableOpacity>
+                    </View>
+
+                    <View className={styles.levelCard}>
+                        <View className={styles.levelHeader}>
+                            <Text className={styles.levelText}>Nível {level}</Text>
+                            <Text className={styles.xpText}>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</Text>
+                        </View>
+                        <View className={styles.progressBarBg}>
+                            <View
+                                className={styles.progressBarFill}
+                                style={{ width: `${xpPercentage}%` }}
+                            />
+                        </View>
                     </View>
 
                     <View className={styles.pathWrapper}>

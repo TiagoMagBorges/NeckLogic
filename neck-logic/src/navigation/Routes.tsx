@@ -10,6 +10,7 @@ import RegisterScreen from '../screens/Register';
 import LogicPathScreen from '../screens/LogicPath';
 import LessonScreen from '../screens/Lesson';
 import OnboardingScreen from '../screens/Onboarding';
+import LessonFeedbackScreen from '../screens/LessonFeedback';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -17,6 +18,13 @@ export type RootStackParamList = {
     Onboarding: undefined;
     LogicPath: undefined;
     Lesson: { moduleId: number; title: string };
+    LessonFeedback: {
+        xpGained: number;
+        leveledUp: boolean;
+        currentLevel: number;
+        mistakesCount: number;
+        drillCount: number;
+    };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +48,7 @@ export default function Routes() {
                         <>
                             <Stack.Screen name="LogicPath" component={LogicPathScreen} />
                             <Stack.Screen name="Lesson" component={LessonScreen} />
+                            <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                         </>
                     ) : (
                         <Stack.Screen name="Onboarding" component={OnboardingScreen} />

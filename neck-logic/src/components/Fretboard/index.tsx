@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import Svg, { Rect, Line, Circle, Text, G } from 'react-native-svg';
 
@@ -13,9 +13,12 @@ interface FretboardProps {
     frets?: number;
     notes?: FretboardNote[];
     onFretPress?: (stringNum: number, fretNum: number) => void;
+    autoScroll?: boolean;
 }
 
-export function Fretboard({ frets = 22, notes = [], onFretPress }: FretboardProps) {
+export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = false }: FretboardProps) {
+    const scrollViewRef = useRef<ScrollView>(null);
+
     const FRET_WIDTH = 75;
     const NUT_OFFSET = 50;
     const SVG_HEIGHT = 260;
@@ -35,8 +38,20 @@ export function Fretboard({ frets = 22, notes = [], onFretPress }: FretboardProp
     const doubleInlays = [12, 24];
     const markedFrets = [0, ...singleInlays, ...doubleInlays];
 
+    useEffect(() => {
+        if (!scrollViewRef.current || !autoScroll || notes.length === 0) return;
+
+        const minFret = Math.min(...notes.map(n => n.fret));
+        const scrollX = Math.max(0, (minFret - 1) * FRET_WIDTH);
+
+        setTimeout(() => {
+            scrollViewRef.current?.scrollTo({ x: scrollX, animated: true });
+        }, 50);
+    }, [notes, autoScroll]);
+
     return (
         <ScrollView
+            ref={scrollViewRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             className="w-full"

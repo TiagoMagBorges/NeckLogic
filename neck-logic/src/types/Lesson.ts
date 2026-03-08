@@ -1,18 +1,26 @@
-export type LessonType = 'THEORY' | 'DRILL' | 'RHYTHM_DRILL';
+import { FretboardNote } from '../components/Fretboard';
+
+export interface FretboardConfig {
+    tuning?: string[];
+    frets?: number;
+    explicitNotes?: FretboardNote[];
+    highlightNotes?: string[];
+}
 
 export interface LessonStep {
-    type: LessonType;
+    type: 'THEORY' | 'DRILL';
     title: string;
     text?: string;
     imageUrl?: string;
-    audioUrl?: string;
     question?: string;
     targetNote?: string;
-    targetString?: number;
+    targetNotes?: string[];
+    targetShape?: { string: number; fret: number }[];
+    fretboardConfig?: FretboardConfig;
 }
 
 export interface LessonContentDTO {
-    moduleId: number;
+    id: number;
     title: string;
     contentJson: string;
 }
