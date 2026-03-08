@@ -88,6 +88,7 @@ export default function LessonScreen() {
     }
 
     const showFretboard = currentStep.type === 'DRILL' || !!currentStep.fretboardConfig;
+    const displayFrets = Math.max(12, currentStep.fretboardConfig?.frets ?? 22);
 
     return (
         <SafeAreaView className={styles.safeArea}>
@@ -131,9 +132,11 @@ export default function LessonScreen() {
 
                         <View style={{ marginHorizontal: -24 }}>
                             <Fretboard
-                                frets={currentStep.fretboardConfig?.frets || 22}
+                                key={`step-${currentStepIndex}`}
+                                frets={displayFrets}
                                 notes={notesToRender}
                                 onFretPress={currentStep.type === 'DRILL' ? handleFretPress : undefined}
+                                autoScroll={currentStep.type === 'THEORY'}
                             />
                         </View>
                     </View>

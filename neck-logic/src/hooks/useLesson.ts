@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { LessonContentDTO, LessonStep } from '../types/Lesson';
 import { RootStackParamList } from '../navigation/Routes';
 import { getNoteAtFret, TUNINGS } from '../core/MusicEngine';
+import { useAuth } from '../contexts/AuthContext';
 
 type LessonScreenRouteProp = RouteProp<RootStackParamList, 'Lesson'>;
 
@@ -13,6 +14,7 @@ export function useLesson() {
     const navigation = useNavigation<any>();
     const route = useRoute<LessonScreenRouteProp>();
     const { moduleId } = route.params;
+    const { updateUserProgress } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -21,6 +23,7 @@ export function useLesson() {
 
     const [selectedFrets, setSelectedFrets] = useState<{ string: number; fret: number }[]>([]);
     const [checkResult, setCheckResult] = useState<'IDLE' | 'CORRECT' | 'INCORRECT'>('IDLE');
+    const [mistakesCount, setMistakesCount] = useState(0);
 
     useEffect(() => {
         fetchContent();
@@ -78,6 +81,10 @@ export function useLesson() {
                     }
                 }
 
+                if (!isCorrect) {
+                    setMistakesCount(prev => prev + 1);
+                }
+
                 setCheckResult(isCorrect ? 'CORRECT' : 'INCORRECT');
                 return;
             }
@@ -96,8 +103,22 @@ export function useLesson() {
         } else {
             try {
                 setIsSaving(true);
-                await api.post(`/modules/${moduleId}/complete`);
-                navigation.navigate('LogicPath');
+                const response = await api.post(`/modules/${moduleId}/complete`, { mistakesCount });
+
+                const { totalXp, currentLevel, leveledUp, xpGained } = response.data;
+
+                await updateUserProgress(totalXp, currentLevel);
+
+                const drillCount = steps.filter(s => s.type === 'DRILL').length;
+
+                navigation.replace('LessonFeedback', {
+                    xpGained,
+                    leveledUp,
+                    currentLevel,
+                    mistakesCount,
+                    drillCount
+                });
+
             } catch (error: any) {
                 Alert.alert("Erro", "Não foi possível salvar o progresso.");
             } finally {
@@ -112,11 +133,22 @@ export function useLesson() {
         if (currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
 
         setCheckResult('IDLE');
+
+        const isSingleSelection = !!currentStep.targetNote ||
+            currentStep.targetShape?.length === 1 ||
+            currentStep.targetNotes?.length === 1;
+
         setSelectedFrets(prev => {
             const exists = prev.find(p => p.string === stringNum && p.fret === fretNum);
+
             if (exists) {
                 return prev.filter(p => p.string !== stringNum || p.fret !== fretNum);
             }
+
+            if (isSingleSelection) {
+                return [{ string: stringNum, fret: fretNum }];
+            }
+
             return [...prev, { string: stringNum, fret: fretNum }];
         });
     }
