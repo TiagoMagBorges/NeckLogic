@@ -65,7 +65,7 @@ export function useLesson() {
                     }
                 } else if (currentStep.targetNotes && currentStep.targetNotes.length > 0) {
                     const selectedNoteNames = selectedFrets.map(f =>
-                        getNoteAtFret(tuning[f.string - 1], f.fret).toUpperCase()
+                        getNoteAtFret(tuning[6 - f.string], f.fret).toUpperCase()
                     );
                     const targets = currentStep.targetNotes.map(n => n.toUpperCase());
 
@@ -75,7 +75,7 @@ export function useLesson() {
                     isCorrect = allSelectedValid && allTargetsFound;
                 } else if (currentStep.targetNote) {
                     if (selectedFrets.length === 1) {
-                        const openNote = tuning[selectedFrets[0].string - 1];
+                        const openNote = tuning[6 - selectedFrets[0].string];
                         const clickedNoteName = getNoteAtFret(openNote, selectedFrets[0].fret);
                         isCorrect = clickedNoteName.toUpperCase() === currentStep.targetNote.toUpperCase();
                     }
