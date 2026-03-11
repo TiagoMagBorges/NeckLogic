@@ -2,17 +2,27 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
 
+export interface User {
+    name: string;
+    email: string;
+}
+
 interface AuthContextData {
     signed: boolean;
     loading: boolean;
     onboardingCompleted: boolean;
     xp: number;
     level: number;
+    streak: number;
+    user: User | null;
     signIn(credentials: any): Promise<void>;
     signUp(data: any): Promise<void>;
     signOut(): void;
     completeOnboarding(): Promise<void>;
-    updateUserProgress(newXp: number, newLevel: number): Promise<void>;
+    updateUserProgress(newXp: number, newLevel: number, newStreak?: number): Promise<void>;
+    updateAccountProfile(data: { name: string, email: string }): Promise<void>;
+    updatePassword(data: any): Promise<void>;
+    deleteAccount(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -23,6 +33,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
+    const [streak, setStreak] = useState(0);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         async function loadStorageData() {
@@ -30,6 +42,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const storageOnboarding = await AsyncStorage.getItem('@NeckLogic:onboarding');
             const storageXp = await AsyncStorage.getItem('@NeckLogic:xp');
             const storageLevel = await AsyncStorage.getItem('@NeckLogic:level');
+            const storageStreak = await AsyncStorage.getItem('@NeckLogic:streak');
+            const storageUser = await AsyncStorage.getItem('@NeckLogic:user');
 
             if (storageToken) {
                 api.defaults.headers.Authorization = `Bearer ${storageToken}`;
@@ -37,6 +51,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setOnboardingCompleted(storageOnboarding === 'true');
                 setXp(storageXp ? parseInt(storageXp, 10) : 0);
                 setLevel(storageLevel ? parseInt(storageLevel, 10) : 1);
+                setStreak(storageStreak ? parseInt(storageStreak, 10) : 0);
+
+                if (storageUser) {
+                    setUser(JSON.parse(storageUser));
+                }
             }
             setLoading(false);
         }
@@ -62,12 +81,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             setLoading(true);
             const response = await api.post('/auth/login', credentials);
-            const { token, onboardingCompleted: isCompleted, xp: userXp, level: userLevel } = response.data;
+            const { token, onboardingCompleted: isCompleted, xp: userXp, level: userLevel, streak: userStreak, name, email } = response.data;
+
+            const loggedUser: User = {
+                name: name || 'Guitarrista',
+                email: email || credentials.email
+            };
 
             await AsyncStorage.setItem('@NeckLogic:token', token);
             await AsyncStorage.setItem('@NeckLogic:onboarding', String(isCompleted));
             await AsyncStorage.setItem('@NeckLogic:xp', String(userXp || 0));
             await AsyncStorage.setItem('@NeckLogic:level', String(userLevel || 1));
+            await AsyncStorage.setItem('@NeckLogic:streak', String(userStreak || 0));
+            await AsyncStorage.setItem('@NeckLogic:user', JSON.stringify(loggedUser));
 
             api.defaults.headers.Authorization = `Bearer ${token}`;
 
@@ -75,6 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setOnboardingCompleted(isCompleted);
             setXp(userXp || 0);
             setLevel(userLevel || 1);
+            setStreak(userStreak || 0);
+            setUser(loggedUser);
         } catch (error) {
             console.error(error);
             throw error;
@@ -107,11 +135,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }
 
-    async function updateUserProgress(newXp: number, newLevel: number) {
+    async function updateUserProgress(newXp: number, newLevel: number, newStreak?: number) {
         await AsyncStorage.setItem('@NeckLogic:xp', String(newXp));
         await AsyncStorage.setItem('@NeckLogic:level', String(newLevel));
         setXp(newXp);
         setLevel(newLevel);
+
+        if (newStreak !== undefined) {
+            await AsyncStorage.setItem('@NeckLogic:streak', String(newStreak));
+            setStreak(newStreak);
+        }
+    }
+
+    async function updateAccountProfile(data: { name: string, email: string }) {
+        try {
+            const response = await api.put('/users/profile', data);
+            const updatedUser: User = { name: response.data.name, email: response.data.email };
+            await AsyncStorage.setItem('@NeckLogic:user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async function updatePassword(data: any) {
+        try {
+            await api.put('/users/password', data);
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    async function deleteAccount() {
+        try {
+            await api.delete('/users/account');
+            signOut();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
     function signOut() {
@@ -119,12 +183,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             '@NeckLogic:token',
             '@NeckLogic:onboarding',
             '@NeckLogic:xp',
-            '@NeckLogic:level'
+            '@NeckLogic:level',
+            '@NeckLogic:streak',
+            '@NeckLogic:user'
         ]).then(() => {
             setSigned(false);
             setOnboardingCompleted(false);
             setXp(0);
             setLevel(1);
+            setStreak(0);
+            setUser(null);
         });
     }
 
@@ -135,11 +203,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             onboardingCompleted,
             xp,
             level,
+            streak,
+            user,
             signIn,
             signUp,
             signOut,
             completeOnboarding,
-            updateUserProgress
+            updateUserProgress,
+            updateAccountProfile,
+            updatePassword,
+            deleteAccount
         }}>
             {children}
         </AuthContext.Provider>

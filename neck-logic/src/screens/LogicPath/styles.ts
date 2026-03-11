@@ -6,12 +6,10 @@ export const styles = {
     contentContainer: "w-full max-w-md self-center",
     scrollContent: { padding: 24, paddingBottom: 100 },
 
-    headerContainer: "mb-8 relative flex-row justify-center items-center",
+    headerContainer: "mb-8 flex-row justify-center items-center",
     headerTexts: "items-center",
     title: "text-3xl font-bold text-foreground text-center",
     subtitle: "text-muted-foreground text-sm text-center",
-    logoutButton: "absolute right-0 p-2",
-    logoutText: "text-destructive text-xs",
 
     levelCard: "w-full bg-card border border-border/10 rounded-2xl p-5 mb-10 shadow-sm",
     levelHeader: "flex-row justify-between items-end mb-3",
