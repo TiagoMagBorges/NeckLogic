@@ -10,10 +10,13 @@ import {
     INTERVAL_LABELS,
     getFretboardPositionsForNotes
 } from '../../core/MusicEngine';
+import { useAuth } from '../../contexts/AuthContext';
 
 type ScaleMode = keyof typeof SCALES | 'custom_notes' | 'custom_intervals';
 
 export default function LabScreen() {
+    const { tuning } = useAuth();
+
     const [rootNote, setRootNote] = useState('C');
     const [scaleMode, setScaleMode] = useState<ScaleMode>('major');
 
@@ -58,8 +61,8 @@ export default function LabScreen() {
     }, [rootNote, activeNotes, scaleMode]);
 
     const fretboardPositions = useMemo(() => {
-        return getFretboardPositionsForNotes(activeNotes, undefined, 22, '#00D9FF', rootNote, '#A855F7');
-    }, [activeNotes, rootNote]);
+        return getFretboardPositionsForNotes(activeNotes, tuning, 22, '#00D9FF', rootNote, '#A855F7');
+    }, [activeNotes, tuning, rootNote]);
 
     const toggleCustomNote = (note: string) => {
         if (note === rootNote) return;

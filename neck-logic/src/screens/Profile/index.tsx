@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Trophy, Zap, Moon, Sun, Flame, CheckCircle } from 'lucide-react-native';
+import { Trophy, Zap, Moon, Sun, Flame, SlidersHorizontal, ChevronRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -11,7 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfileScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { user, xp, level, streak } = useAuth();
+    const { user, xp, level, streak, tuning } = useAuth();
 
     const [isDarkTheme, setIsDarkTheme] = useState(true);
 
@@ -94,6 +94,22 @@ export default function ProfileScreen() {
                 </View>
 
                 <View className={styles.settingsSection}>
+
+                    <TouchableOpacity
+                        className="flex-row items-center justify-between bg-card border border-border/10 p-5 rounded-xl mb-4"
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('GuitarTuning')}
+                    >
+                        <View className="flex-row items-center">
+                            <SlidersHorizontal size={24} color="#00D9FF" />
+                            <View className="ml-3">
+                                <Text className="font-medium text-foreground">Afinação da Guitarra</Text>
+                                <Text className="text-sm text-muted-foreground mt-0.5 tracking-widest">{tuning.join(' ')}</Text>
+                            </View>
+                        </View>
+                        <ChevronRight size={20} color="#3F3F46" />
+                    </TouchableOpacity>
+
                     <View className={styles.themeCard}>
                         <View className={styles.themeInfo}>
                             {isDarkTheme ? (

@@ -15,6 +15,7 @@ interface AuthContextData {
     level: number;
     streak: number;
     user: User | null;
+    tuning: string[];
     signIn(credentials: any): Promise<void>;
     signUp(data: any): Promise<void>;
     signOut(): void;
@@ -23,9 +24,11 @@ interface AuthContextData {
     updateAccountProfile(data: { name: string, email: string }): Promise<void>;
     updatePassword(data: any): Promise<void>;
     deleteAccount(): Promise<void>;
+    updateTuning(newTuning: string[]): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [signed, setSigned] = useState(false);
@@ -35,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [level, setLevel] = useState(1);
     const [streak, setStreak] = useState(0);
     const [user, setUser] = useState<User | null>(null);
+    const [tuning, setTuning] = useState<string[]>(DEFAULT_TUNING);
 
     useEffect(() => {
         async function loadStorageData() {
@@ -44,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const storageLevel = await AsyncStorage.getItem('@NeckLogic:level');
             const storageStreak = await AsyncStorage.getItem('@NeckLogic:streak');
             const storageUser = await AsyncStorage.getItem('@NeckLogic:user');
+            const storageTuning = await AsyncStorage.getItem('@NeckLogic:tuning');
 
             if (storageToken) {
                 api.defaults.headers.Authorization = `Bearer ${storageToken}`;
@@ -55,6 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 if (storageUser) {
                     setUser(JSON.parse(storageUser));
+                }
+
+                if (storageTuning) {
+                    setTuning(JSON.parse(storageTuning));
                 }
             }
             setLoading(false);
@@ -178,6 +187,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }
 
+    async function updateTuning(newTuning: string[]) {
+        await AsyncStorage.setItem('@NeckLogic:tuning', JSON.stringify(newTuning));
+        setTuning(newTuning);
+    }
+
     function signOut() {
         AsyncStorage.multiRemove([
             '@NeckLogic:token',
@@ -185,7 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             '@NeckLogic:xp',
             '@NeckLogic:level',
             '@NeckLogic:streak',
-            '@NeckLogic:user'
+            '@NeckLogic:user',
+            '@NeckLogic:tuning'
         ]).then(() => {
             setSigned(false);
             setOnboardingCompleted(false);
@@ -193,6 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setLevel(1);
             setStreak(0);
             setUser(null);
+            setTuning(DEFAULT_TUNING);
         });
     }
 
@@ -205,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             level,
             streak,
             user,
+            tuning,
             signIn,
             signUp,
             signOut,
@@ -212,7 +229,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             updateUserProgress,
             updateAccountProfile,
             updatePassword,
-            deleteAccount
+            deleteAccount,
+            updateTuning
         }}>
             {children}
         </AuthContext.Provider>
