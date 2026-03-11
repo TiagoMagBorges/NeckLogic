@@ -19,10 +19,10 @@ export const SCALES: Record<string, ScaleDef> = {
 };
 
 export const TUNINGS: Record<string, string[]> = {
-    STANDARD: ['E', 'B', 'G', 'D', 'A', 'E'],
-    DROP_D: ['E', 'B', 'G', 'D', 'A', 'D'],
-    HALF_STEP_DOWN: ['D#', 'A#', 'F#', 'C#', 'G#', 'D#'],
-    OPEN_G: ['D', 'B', 'G', 'D', 'G', 'D']
+    STANDARD: ['E', 'A', 'D', 'G', 'B', 'E'],
+    DROP_D: ['D', 'A', 'D', 'G', 'B', 'E'],
+    HALF_STEP_DOWN: ['D#', 'G#', 'C#', 'F#', 'A#', 'D#'],
+    OPEN_G: ['D', 'G', 'D', 'G', 'B', 'D']
 };
 
 export function getNoteAtFret(openNote: string, fret: number): string {
@@ -45,7 +45,7 @@ export function getFretboardPositionsForNotes(
     const targets = targetNotes.map(n => n.toUpperCase());
 
     tuning.forEach((openNote, stringIndex) => {
-        const stringNum = stringIndex + 1;
+        const stringNum = 6 - stringIndex;
 
         for (let fret = 0; fret <= maxFrets; fret++) {
             const currentNote = getNoteAtFret(openNote, fret);
