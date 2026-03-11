@@ -2,21 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Lock, FastForward } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+
 import { usePath } from '../../hooks/usePath';
 import { useAuth } from '../../contexts/AuthContext';
 import { styles, getNodeTheme } from './styles';
 import { RootStackParamList } from '../../navigation/Routes';
+import { MainTabParamList } from '../../navigation/MainTabs';
 import { api } from '../../services/api';
 import { SkipSectionModal } from '../../components/SkipSectionModal';
 
-type LogicPathScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LogicPath'>;
+type LogicPathScreenNavigationProp = CompositeNavigationProp<
+    BottomTabNavigationProp<MainTabParamList, 'LogicPath'>,
+    NativeStackNavigationProp<RootStackParamList>
+>;
 
 export default function LogicPathScreen() {
     const navigation = useNavigation<LogicPathScreenNavigationProp>();
     const { modules, loading, refetch } = usePath();
-    const { signOut, xp, level } = useAuth();
+    const { xp, level } = useAuth();
 
     const [skipModalVisible, setSkipModalVisible] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
@@ -91,10 +97,6 @@ export default function LogicPathScreen() {
                             <Text className={styles.title}>The Logic Path</Text>
                             <Text className={styles.subtitle}>Your journey to fretboard mastery</Text>
                         </View>
-
-                        <TouchableOpacity onPress={signOut} className={styles.logoutButton}>
-                            <Text className={styles.logoutText}>Sair</Text>
-                        </TouchableOpacity>
                     </View>
 
                     <View className={styles.levelCard}>

@@ -4,19 +4,21 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '../contexts/AuthContext';
+import { MainTabs } from './MainTabs';
 
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
-import LogicPathScreen from '../screens/LogicPath';
 import LessonScreen from '../screens/Lesson';
 import OnboardingScreen from '../screens/Onboarding';
 import LessonFeedbackScreen from '../screens/LessonFeedback';
+import AccountSettingsScreen from '../screens/AccountSettings';
 
 export type RootStackParamList = {
     Login: undefined;
     Register: undefined;
     Onboarding: undefined;
-    LogicPath: undefined;
+    MainTabs: undefined;
+    AccountSettings: undefined;
     Lesson: { moduleId: number; title: string };
     LessonFeedback: {
         xpGained: number;
@@ -34,7 +36,7 @@ export default function Routes() {
 
     if (loading) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#09090B' }}>
+            <View className="flex-1 justify-center items-center bg-background">
                 <ActivityIndicator size="large" color="#00D9FF" />
             </View>
         );
@@ -46,7 +48,8 @@ export default function Routes() {
                 {signed ? (
                     onboardingCompleted ? (
                         <>
-                            <Stack.Screen name="LogicPath" component={LogicPathScreen} />
+                            <Stack.Screen name="MainTabs" component={MainTabs} />
+                            <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
                             <Stack.Screen name="Lesson" component={LessonScreen} />
                             <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                         </>

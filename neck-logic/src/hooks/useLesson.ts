@@ -105,16 +105,16 @@ export function useLesson() {
                 setIsSaving(true);
                 const response = await api.post(`/modules/${moduleId}/complete`, { mistakesCount });
 
-                const { totalXp, currentLevel, leveledUp, xpGained } = response.data;
+                const { totalXp, level, leveledUp, xpGained, streak } = response.data;
 
-                await updateUserProgress(totalXp, currentLevel);
+                await updateUserProgress(totalXp, level, streak);
 
                 const drillCount = steps.filter(s => s.type === 'DRILL').length;
 
                 navigation.replace('LessonFeedback', {
                     xpGained,
                     leveledUp,
-                    currentLevel,
+                    currentLevel: level,
                     mistakesCount,
                     drillCount
                 });

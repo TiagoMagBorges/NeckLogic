@@ -11,8 +11,6 @@ import { styles } from './styles';
 type LessonFeedbackRouteProp = RouteProp<RootStackParamList, 'LessonFeedback'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LessonFeedback'>;
 
-const AnimatedMusic = Animated.createAnimatedComponent(Music);
-
 export default function LessonFeedbackScreen() {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<LessonFeedbackRouteProp>();
@@ -37,16 +35,16 @@ export default function LessonFeedbackScreen() {
 
     useEffect(() => {
         const animations = [
-            Animated.spring(fadeAnimNote1, { toValue: activeNotes >= 1 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: false }),
-            Animated.spring(fadeAnimNote2, { toValue: activeNotes >= 2 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: false }),
-            Animated.spring(fadeAnimNote3, { toValue: activeNotes === 3 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: false })
+            Animated.spring(fadeAnimNote1, { toValue: activeNotes >= 1 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: true }),
+            Animated.spring(fadeAnimNote2, { toValue: activeNotes >= 2 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: true }),
+            Animated.spring(fadeAnimNote3, { toValue: activeNotes === 3 ? 1 : 0, tension: 50, friction: 8, useNativeDriver: true })
         ];
 
         Animated.stagger(150, animations).start();
     }, [activeNotes]);
 
     function handleContinue() {
-        navigation.navigate('LogicPath');
+        navigation.navigate('MainTabs');
     }
 
     return (
@@ -66,11 +64,6 @@ export default function LessonFeedbackScreen() {
                         const isCenter = noteNum === 2;
                         const size = isCenter ? 64 : 48;
 
-                        const iconColor = animValue.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['#3F3F46', '#00D9FF']
-                        });
-
                         const iconScale = animValue.interpolate({
                             inputRange: [0, 0.5, 1],
                             outputRange: [1, 1.2, 1.1]
@@ -81,12 +74,23 @@ export default function LessonFeedbackScreen() {
                                 key={noteNum}
                                 className={`${styles.noteWrapper} ${isCenter ? styles.noteCenter : ''}`}
                             >
-                                <AnimatedMusic
-                                    size={size}
-                                    color={iconColor}
-                                    strokeWidth={2}
-                                    style={{ transform: [{ scale: iconScale }] }}
-                                />
+                                <View style={{ width: size, height: size }}>
+                                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
+                                        <Music size={size} color="#3F3F46" strokeWidth={2} />
+                                    </View>
+
+                                    <Animated.View
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0, left: 0, right: 0, bottom: 0,
+                                            alignItems: 'center', justifyContent: 'center',
+                                            opacity: animValue,
+                                            transform: [{ scale: iconScale }]
+                                        }}
+                                    >
+                                        <Music size={size} color="#00D9FF" strokeWidth={2} />
+                                    </Animated.View>
+                                </View>
                             </View>
                         );
                     })}
