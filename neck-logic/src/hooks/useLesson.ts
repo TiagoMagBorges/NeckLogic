@@ -5,7 +5,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { api } from '../services/api';
 import { LessonContentDTO, LessonStep } from '../types/Lesson';
 import { RootStackParamList } from '../navigation/Routes';
-import { getNoteAtFret, TUNINGS } from '../core/MusicEngine';
+import { getNoteAtFret } from '../core/MusicEngine';
 import { useAuth } from '../contexts/AuthContext';
 
 type LessonScreenRouteProp = RouteProp<RootStackParamList, 'Lesson'>;
@@ -14,7 +14,7 @@ export function useLesson() {
     const navigation = useNavigation<any>();
     const route = useRoute<LessonScreenRouteProp>();
     const { moduleId } = route.params;
-    const { updateUserProgress } = useAuth();
+    const { updateUserProgress, tuning } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -65,7 +65,7 @@ export function useLesson() {
                     }
                 } else if (currentStep.targetNotes && currentStep.targetNotes.length > 0) {
                     const selectedNoteNames = selectedFrets.map(f =>
-                        getNoteAtFret(TUNINGS.STANDARD[f.string - 1], f.fret).toUpperCase()
+                        getNoteAtFret(tuning[f.string - 1], f.fret).toUpperCase()
                     );
                     const targets = currentStep.targetNotes.map(n => n.toUpperCase());
 
@@ -75,7 +75,7 @@ export function useLesson() {
                     isCorrect = allSelectedValid && allTargetsFound;
                 } else if (currentStep.targetNote) {
                     if (selectedFrets.length === 1) {
-                        const openNote = TUNINGS.STANDARD[selectedFrets[0].string - 1];
+                        const openNote = tuning[selectedFrets[0].string - 1];
                         const clickedNoteName = getNoteAtFret(openNote, selectedFrets[0].fret);
                         isCorrect = clickedNoteName.toUpperCase() === currentStep.targetNote.toUpperCase();
                     }
@@ -167,6 +167,7 @@ export function useLesson() {
         checkResult,
         handleAction,
         handleFretPress,
-        goBack
+        goBack,
+        tuning
     };
 }

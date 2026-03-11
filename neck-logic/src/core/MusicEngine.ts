@@ -2,6 +2,22 @@ import { FretboardNote } from '../components/Fretboard';
 
 export const CHROMATIC_SCALE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+export const INTERVAL_LABELS = ['1', '♭2', '2', '♭3', '3', '4', '♭5', '5', '♭6', '6', '♭7', '7'];
+
+export interface ScaleDef {
+    name: string;
+    intervals: number[];
+    formula: string;
+}
+
+export const SCALES: Record<string, ScaleDef> = {
+    major: { name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11], formula: '1 - 2 - 3 - 4 - 5 - 6 - 7' },
+    minor: { name: 'Natural Minor', intervals: [0, 2, 3, 5, 7, 8, 10], formula: '1 - 2 - ♭3 - 4 - 5 - ♭6 - ♭7' },
+    pentatonicMajor: { name: 'Major Pentatonic', intervals: [0, 2, 4, 7, 9], formula: '1 - 2 - 3 - 5 - 6' },
+    pentatonicMinor: { name: 'Minor Pentatonic', intervals: [0, 3, 5, 7, 10], formula: '1 - ♭3 - 4 - 5 - ♭7' },
+    dorian: { name: 'Dorian', intervals: [0, 2, 3, 5, 7, 9, 10], formula: '1 - 2 - ♭3 - 4 - 5 - 6 - ♭7' },
+};
+
 export const TUNINGS: Record<string, string[]> = {
     STANDARD: ['E', 'B', 'G', 'D', 'A', 'E'],
     DROP_D: ['E', 'B', 'G', 'D', 'A', 'D'],
@@ -21,7 +37,9 @@ export function getFretboardPositionsForNotes(
     targetNotes: string[],
     tuning: string[] = TUNINGS.STANDARD,
     maxFrets: number = 22,
-    color: string = '#00D9FF'
+    defaultColor: string = '#00D9FF',
+    rootNote?: string,
+    rootColor: string = '#A855F7'
 ): FretboardNote[] {
     const positions: FretboardNote[] = [];
     const targets = targetNotes.map(n => n.toUpperCase());
@@ -33,11 +51,12 @@ export function getFretboardPositionsForNotes(
             const currentNote = getNoteAtFret(openNote, fret);
 
             if (targets.includes(currentNote)) {
+                const isRoot = rootNote && currentNote === rootNote.toUpperCase();
                 positions.push({
                     string: stringNum,
                     fret,
                     label: currentNote,
-                    color
+                    color: isRoot ? rootColor : defaultColor
                 });
             }
         }

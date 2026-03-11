@@ -12,6 +12,7 @@ import LessonScreen from '../screens/Lesson';
 import OnboardingScreen from '../screens/Onboarding';
 import LessonFeedbackScreen from '../screens/LessonFeedback';
 import AccountSettingsScreen from '../screens/AccountSettings';
+import GuitarTuningScreen from '../screens/GuitarTuning';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -19,6 +20,7 @@ export type RootStackParamList = {
     Onboarding: undefined;
     MainTabs: undefined;
     AccountSettings: undefined;
+    GuitarTuning: undefined;
     Lesson: { moduleId: number; title: string };
     LessonFeedback: {
         xpGained: number;
@@ -50,6 +52,7 @@ export default function Routes() {
                         <>
                             <Stack.Screen name="MainTabs" component={MainTabs} />
                             <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+                            <Stack.Screen name="GuitarTuning" component={GuitarTuningScreen} />
                             <Stack.Screen name="Lesson" component={LessonScreen} />
                             <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                         </>
