@@ -8,6 +8,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { usePath } from '../../hooks/usePath';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { styles, getNodeTheme } from './styles';
 import { RootStackParamList } from '../../navigation/Routes';
 import { MainTabParamList } from '../../navigation/MainTabs';
@@ -23,6 +24,7 @@ export default function LogicPathScreen() {
     const navigation = useNavigation<LogicPathScreenNavigationProp>();
     const { modules, loading, refetch } = usePath();
     const { xp, level } = useAuth();
+    const { isDarkTheme } = useTheme();
 
     const [skipModalVisible, setSkipModalVisible] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
@@ -133,7 +135,7 @@ export default function LogicPathScreen() {
                                 </View>
 
                                 {section.modules.map((node: any) => {
-                                    const theme = getNodeTheme(node.status);
+                                    const theme = getNodeTheme(node.status, isDarkTheme);
                                     const isClickable = node.status !== 'LOCKED';
 
                                     return (

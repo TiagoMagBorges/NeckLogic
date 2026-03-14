@@ -45,14 +45,17 @@ export const styles = {
     statLabel: "text-[10px] text-muted-foreground font-bold uppercase",
 };
 
-export const getNodeTheme = (status: ModuleStatus) => {
+export const getNodeTheme = (status: ModuleStatus, isDarkTheme: boolean) => {
+    const bgHex = isDarkTheme ? '#121212' : '#FFFFFF';
+    const mutedHex = isDarkTheme ? '#A1A1AA' : '#71717A';
+
     switch (status) {
         case 'COMPLETED':
-            return { bgClass: 'bg-white border-white', iconColor: '#121212', textOpacity: 'opacity-100' };
+            return { bgClass: 'bg-foreground border-foreground', iconColor: bgHex, textOpacity: 'opacity-100' };
         case 'CURRENT':
-            return { bgClass: 'bg-primary border-primary', iconColor: '#121212', textOpacity: 'opacity-100' };
+            return { bgClass: 'bg-primary border-primary', iconColor: isDarkTheme ? '#121212' : '#FFFFFF', textOpacity: 'opacity-100' };
         case 'LOCKED':
         default:
-            return { bgClass: 'bg-background border-muted', iconColor: '#A1A1AA', textOpacity: 'opacity-40' };
+            return { bgClass: 'bg-background border-muted', iconColor: mutedHex, textOpacity: 'opacity-40' };
     }
 };

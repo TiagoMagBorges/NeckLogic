@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, ScrollView, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Circle, Text, G } from 'react-native-svg';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export interface FretboardNote {
     string: number;
@@ -19,6 +20,15 @@ interface FretboardProps {
 export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = false }: FretboardProps) {
     const scrollViewRef = useRef<ScrollView>(null);
     const { width } = useWindowDimensions();
+    const { isDarkTheme } = useTheme();
+
+    const bgColor = isDarkTheme ? '#18181B' : '#F5F5F5';
+    const inlayColor = isDarkTheme ? '#3F3F46' : '#D4D4D8';
+    const nutColor = isDarkTheme ? '#D4D4D8' : '#71717A';
+    const fretLineColor = isDarkTheme ? '#52525B' : '#A1A1AA';
+    const stringColor = isDarkTheme ? '#A1A1AA' : '#52525B';
+    const fretNumberColor = isDarkTheme ? '#71717A' : '#A1A1AA';
+    const noteTextColor = isDarkTheme ? '#09090B' : '#FFFFFF';
 
     const isWidescreen = width > 768;
     const FRET_WIDTH = isWidescreen ? 85 : 75;
@@ -35,7 +45,6 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
 
     const availableHeight = FRET_BOTTOM - FRET_TOP;
     const stringSpacing = availableHeight / (STRING_COUNT - 1);
-
     const shouldCenter = SVG_WIDTH < (width - 48);
 
     const fretsArray = Array.from({ length: frets + 1 }, (_, i) => i);
@@ -69,15 +78,15 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                 justifyContent: shouldCenter ? 'center' : 'flex-start'
             }}
         >
-            <View style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} className="bg-[#18181B] border-y border-border/20 shadow-xl">
+            <View style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} className="bg-card border-y border-border/20 shadow-xl">
                 <Svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} width="100%" height="100%">
-                    <Rect x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT} fill="#18181B" />
+                    <Rect x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT} fill={bgColor} />
 
                     {singleInlays.map((fret) => {
                         if (fret > frets) return null;
                         const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
                         const cy = FRET_TOP + (availableHeight / 2);
-                        return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r={isWidescreen ? "12" : "10"} fill="#3F3F46" />;
+                        return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r={isWidescreen ? "12" : "10"} fill={inlayColor} />;
                     })}
 
                     {doubleInlays.map((fret) => {
@@ -87,8 +96,8 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                         const offset = isWidescreen ? 40 : 30;
                         return (
                             <React.Fragment key={`double-inlay-${fret}`}>
-                                <Circle cx={cx} cy={cyCenter - offset} r={isWidescreen ? "10" : "8"} fill="#3F3F46" />
-                                <Circle cx={cx} cy={cyCenter + offset} r={isWidescreen ? "10" : "8"} fill="#3F3F46" />
+                                <Circle cx={cx} cy={cyCenter - offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
+                                <Circle cx={cx} cy={cyCenter + offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
                             </React.Fragment>
                         );
                     })}
@@ -103,7 +112,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                                 y1={FRET_TOP}
                                 x2={x}
                                 y2={FRET_BOTTOM}
-                                stroke={isNut ? "#D4D4D8" : "#52525B"}
+                                stroke={isNut ? nutColor : fretLineColor}
                                 strokeWidth={isNut ? "6" : "3"}
                             />
                         );
@@ -119,7 +128,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                                 y1={y}
                                 x2={SVG_WIDTH}
                                 y2={y}
-                                stroke="#A1A1AA"
+                                stroke={stringColor}
                                 strokeWidth={stringThickness}
                             />
                         );
@@ -136,7 +145,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                                 key={`fret-text-${fret}`}
                                 x={x}
                                 y={SVG_HEIGHT - (isWidescreen ? 20 : 15)}
-                                fill="#71717A"
+                                fill={fretNumberColor}
                                 fontSize={isWidescreen ? "14" : "12"}
                                 fontWeight="bold"
                                 textAnchor="middle"
@@ -152,7 +161,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                             : (note.fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
 
                         const cy = FRET_TOP + ((note.string - 1) * stringSpacing);
-                        const markerColor = note.color || '#00D9FF';
+                        const markerColor = note.color || (isDarkTheme ? '#00D9FF' : '#00B8D4');
 
                         return (
                             <G key={`note-${index}-${note.string}-${note.fret}`}>
@@ -161,7 +170,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                                     <Text
                                         x={cx}
                                         y={cy + (isWidescreen ? 5 : 4)}
-                                        fill="#09090B"
+                                        fill={noteTextColor}
                                         fontSize={FONT_SIZE}
                                         fontWeight="bold"
                                         textAnchor="middle"
