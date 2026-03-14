@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Circle, Text, G } from 'react-native-svg';
 
 export interface FretboardNote {
@@ -18,18 +18,25 @@ interface FretboardProps {
 
 export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = false }: FretboardProps) {
     const scrollViewRef = useRef<ScrollView>(null);
+    const { width } = useWindowDimensions();
 
-    const FRET_WIDTH = 75;
-    const NUT_OFFSET = 50;
-    const SVG_HEIGHT = 260;
+    const isWidescreen = width > 768;
+    const FRET_WIDTH = isWidescreen ? 85 : 75;
+    const SVG_HEIGHT = isWidescreen ? 340 : 260;
+    const NUT_OFFSET = isWidescreen ? 60 : 50;
+
+    const FRET_TOP = isWidescreen ? 30 : 20;
+    const FRET_BOTTOM = SVG_HEIGHT - (isWidescreen ? 50 : 40);
+    const MARKER_RADIUS = isWidescreen ? 16 : 14;
+    const FONT_SIZE = isWidescreen ? "16" : "14";
+
     const STRING_COUNT = 6;
-
     const SVG_WIDTH = (frets * FRET_WIDTH) + NUT_OFFSET;
 
-    const FRET_TOP = 20;
-    const FRET_BOTTOM = 220;
     const availableHeight = FRET_BOTTOM - FRET_TOP;
     const stringSpacing = availableHeight / (STRING_COUNT - 1);
+
+    const shouldCenter = SVG_WIDTH < (width - 48);
 
     const fretsArray = Array.from({ length: frets + 1 }, (_, i) => i);
     const stringsArray = Array.from({ length: STRING_COUNT }, (_, i) => i);
@@ -47,15 +54,20 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
         setTimeout(() => {
             scrollViewRef.current?.scrollTo({ x: scrollX, animated: true });
         }, 50);
-    }, [notes, autoScroll]);
+    }, [notes, autoScroll, FRET_WIDTH]);
 
     return (
         <ScrollView
             ref={scrollViewRef}
             horizontal
-            showsHorizontalScrollIndicator={false}
+            showsHorizontalScrollIndicator={isWidescreen}
             className="w-full"
             bounces={false}
+            contentContainerStyle={{
+                flexGrow: 1,
+                minWidth: '100%',
+                justifyContent: shouldCenter ? 'center' : 'flex-start'
+            }}
         >
             <View style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} className="bg-[#18181B] border-y border-border/20 shadow-xl">
                 <Svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} width="100%" height="100%">
@@ -65,17 +77,18 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                         if (fret > frets) return null;
                         const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
                         const cy = FRET_TOP + (availableHeight / 2);
-                        return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r="10" fill="#3F3F46" />;
+                        return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r={isWidescreen ? "12" : "10"} fill="#3F3F46" />;
                     })}
 
                     {doubleInlays.map((fret) => {
                         if (fret > frets) return null;
                         const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
                         const cyCenter = FRET_TOP + (availableHeight / 2);
+                        const offset = isWidescreen ? 40 : 30;
                         return (
                             <React.Fragment key={`double-inlay-${fret}`}>
-                                <Circle cx={cx} cy={cyCenter - 30} r="8" fill="#3F3F46" />
-                                <Circle cx={cx} cy={cyCenter + 30} r="8" fill="#3F3F46" />
+                                <Circle cx={cx} cy={cyCenter - offset} r={isWidescreen ? "10" : "8"} fill="#3F3F46" />
+                                <Circle cx={cx} cy={cyCenter + offset} r={isWidescreen ? "10" : "8"} fill="#3F3F46" />
                             </React.Fragment>
                         );
                     })}
@@ -122,9 +135,9 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                             <Text
                                 key={`fret-text-${fret}`}
                                 x={x}
-                                y={SVG_HEIGHT - 15}
+                                y={SVG_HEIGHT - (isWidescreen ? 20 : 15)}
                                 fill="#71717A"
-                                fontSize="12"
+                                fontSize={isWidescreen ? "14" : "12"}
                                 fontWeight="bold"
                                 textAnchor="middle"
                             >
@@ -143,13 +156,13 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
 
                         return (
                             <G key={`note-${index}-${note.string}-${note.fret}`}>
-                                <Circle cx={cx} cy={cy} r="14" fill={markerColor} />
+                                <Circle cx={cx} cy={cy} r={MARKER_RADIUS} fill={markerColor} />
                                 {note.label && (
                                     <Text
                                         x={cx}
-                                        y={cy + 4}
+                                        y={cy + (isWidescreen ? 5 : 4)}
                                         fill="#09090B"
-                                        fontSize="14"
+                                        fontSize={FONT_SIZE}
                                         fontWeight="bold"
                                         textAnchor="middle"
                                     >
