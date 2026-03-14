@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Trophy, Zap, Moon, Sun, Flame, SlidersHorizontal, ChevronRight } from 'lucide-react-native';
@@ -8,14 +8,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles } from './styles';
 import { RootStackParamList } from '../../navigation/Routes';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function ProfileScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { user, xp, level, streak, tuning } = useAuth();
-
-    const [isDarkTheme, setIsDarkTheme] = useState(true);
-
-    const toggleTheme = () => setIsDarkTheme(previousState => !previousState);
+    const { isDarkTheme, toggleTheme } = useTheme();
 
     const getInitials = (name?: string) => {
         if (!name) return 'US';
@@ -115,7 +113,7 @@ export default function ProfileScreen() {
                             {isDarkTheme ? (
                                 <Moon size={24} color="#00D9FF" />
                             ) : (
-                                <Sun size={24} color="#00D9FF" />
+                                <Sun size={24} color="#00B8D4" />
                             )}
                             <View className={styles.themeTextContainer}>
                                 <Text className={styles.themeTitle}>Theme</Text>
@@ -125,9 +123,9 @@ export default function ProfileScreen() {
                             </View>
                         </View>
                         <Switch
-                            trackColor={{ false: '#3F3F46', true: '#00D9FF' }}
+                            trackColor={{ false: '#E5E5E5', true: '#00D9FF' }}
                             thumbColor={'#FFFFFF'}
-                            ios_backgroundColor="#3F3F46"
+                            ios_backgroundColor="#E5E5E5"
                             onValueChange={toggleTheme}
                             value={isDarkTheme}
                         />
