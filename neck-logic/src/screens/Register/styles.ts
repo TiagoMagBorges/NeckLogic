@@ -19,7 +19,7 @@ export const styles = {
     inputWrapper: "relative justify-center",
     iconPosition: "absolute left-4 z-10",
 
-    inputBase: "w-full bg-input-background border border-border rounded-xl pl-12 pr-4 py-4 text-white focus:border-primary",
+    inputBase: "w-full bg-input-background border border-border rounded-xl pl-12 pr-4 py-4 text-foreground focus:border-primary",
 
     termsContainer: "flex-row items-start gap-3 mt-1",
     checkboxBase: "mt-1 w-5 h-5 rounded border items-center justify-center",

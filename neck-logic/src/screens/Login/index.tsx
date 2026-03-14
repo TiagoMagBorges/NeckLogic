@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { z } from 'zod';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { styles, getInputStyle, getButtonStyle } from './styles';
 import { FeedbackModal } from '../../components/FeedbackModal';
 
@@ -17,6 +18,7 @@ const loginSchema = z.object({
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
     const { signIn, loading } = useAuth();
+    const { isDarkTheme } = useTheme();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -123,7 +125,7 @@ export default function LoginScreen() {
                                 className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
                             >
                                 {loading ? (
-                                    <ActivityIndicator color="#121212" />
+                                    <ActivityIndicator color={isDarkTheme ? "#121212" : "#FFFFFF"} />
                                 ) : (
                                     <Text className={styles.buttonText}>Sign In</Text>
                                 )}
@@ -138,7 +140,7 @@ export default function LoginScreen() {
 
                         <View className={styles.socialContainer}>
                             <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Apple size={20} color="#FFFFFF" />
+                                <Apple size={20} color={isDarkTheme ? "#FFFFFF" : "#121212"} />
                                 <Text className={styles.socialText}>Continue with Apple</Text>
                             </TouchableOpacity>
 

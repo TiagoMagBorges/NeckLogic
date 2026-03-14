@@ -5,12 +5,14 @@ import { Mail, Lock, User, Apple, ArrowLeft, Check } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { styles, getCheckboxStyle, getButtonStyle } from './styles';
 import { FeedbackModal } from '../../components/FeedbackModal';
 
 export default function RegisterScreen() {
     const navigation = useNavigation<any>();
     const { signUp, loading } = useAuth();
+    const { isDarkTheme } = useTheme();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -130,7 +132,8 @@ export default function RegisterScreen() {
                                     disabled={loading}
                                     className={`${styles.checkboxBase} ${getCheckboxStyle(termsAccepted)}`}
                                 >
-                                    {termsAccepted && <Check size={14} color="#121212" />}
+                                    {/* Corrigido: Cor do ícone de check (V) baseada no tema do botão primário (escuro no escuro, claro no claro) */}
+                                    {termsAccepted && <Check size={14} color={isDarkTheme ? "#121212" : "#FFFFFF"} />}
                                 </TouchableOpacity>
 
                                 <View className={styles.termsTextWrapper}>
@@ -152,7 +155,7 @@ export default function RegisterScreen() {
                                 className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
                             >
                                 {loading ? (
-                                    <ActivityIndicator color="#121212" />
+                                    <ActivityIndicator color={isDarkTheme ? "#121212" : "#FFFFFF"} />
                                 ) : (
                                     <Text className={styles.buttonText}>Create Account</Text>
                                 )}
@@ -167,7 +170,7 @@ export default function RegisterScreen() {
 
                         <View className={styles.socialContainer}>
                             <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Apple size={20} color="#FFFFFF" />
+                                <Apple size={20} color={isDarkTheme ? "#FFFFFF" : "#121212"} />
                                 <Text className={styles.socialText}>Sign up with Apple</Text>
                             </TouchableOpacity>
 
