@@ -108,47 +108,49 @@ export default function GuitarTuningScreen() {
                 </Text>
 
                 {selectedString !== null && (
-                    <View className="mx-6 mb-8 bg-card border border-primary/40 rounded-2xl overflow-hidden">
-                        <View className="flex-row items-center justify-between px-4 py-3 border-b border-border/10">
-                            <View className="flex-row items-center">
-                                <View className="w-6 h-6 rounded-full items-center justify-center bg-primary mr-2">
-                                    <Text className="text-[#121212] text-xs font-bold">{STRING_LABELS[selectedString]}</Text>
+                    <View className="w-full max-w-md self-center px-6 mb-8">
+                        <View className="bg-card border border-primary/40 rounded-2xl overflow-hidden">
+                            <View className="flex-row items-center justify-between px-4 py-3 border-b border-border/10">
+                                <View className="flex-row items-center">
+                                    <View className="w-6 h-6 rounded-full items-center justify-center bg-primary mr-2">
+                                        <Text className="text-[#121212] text-xs font-bold">{STRING_LABELS[selectedString]}</Text>
+                                    </View>
+                                    <Text className="text-sm text-muted-foreground mr-1">
+                                        {STRING_NAMES[selectedString]}
+                                    </Text>
+                                    <Text className="text-sm text-foreground">
+                                        · Atual: <Text className="text-primary font-bold">{localTuning[selectedString]}</Text>
+                                    </Text>
                                 </View>
-                                <Text className="text-sm text-muted-foreground mr-1">
-                                    {STRING_NAMES[selectedString]}
-                                </Text>
-                                <Text className="text-sm text-foreground">
-                                    · Atual: <Text className="text-primary font-bold">{localTuning[selectedString]}</Text>
-                                </Text>
+                                <TouchableOpacity onPress={() => setSelectedString(null)} className="p-1">
+                                    <Text className="text-muted-foreground text-lg">✕</Text>
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity onPress={() => setSelectedString(null)} className="p-1">
-                                <Text className="text-muted-foreground text-lg">✕</Text>
-                            </TouchableOpacity>
-                        </View>
 
-                        <View className="flex-row flex-wrap px-4 py-4 gap-2 justify-between">
-                            {NOTES.map(note => {
-                                const isActive = localTuning[selectedString] === note;
-                                return (
-                                    <TouchableOpacity
-                                        key={note}
-                                        onPress={() => updateString(selectedString, note)}
-                                        activeOpacity={0.8}
-                                        className={`w-[15%] aspect-square rounded-xl items-center justify-center ${
-                                            isActive ? 'bg-primary' : 'bg-secondary'
-                                        }`}
-                                    >
-                                        <Text className={`font-bold ${isActive ? 'text-[#121212]' : 'text-foreground'}`}>
-                                            {note}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
+                            <View className="flex-row flex-wrap p-4 gap-2 justify-center">
+                                {NOTES.map(note => {
+                                    const isActive = localTuning[selectedString] === note;
+                                    return (
+                                        <TouchableOpacity
+                                            key={note}
+                                            onPress={() => updateString(selectedString, note)}
+                                            activeOpacity={0.8}
+                                            className={`w-[14%] aspect-square min-w-[40px] max-w-[55px] rounded-xl items-center justify-center ${
+                                                isActive ? 'bg-primary' : 'bg-secondary'
+                                            }`}
+                                        >
+                                            <Text className={`font-bold ${isActive ? 'text-[#121212]' : 'text-foreground'}`}>
+                                                {note}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
                         </View>
                     </View>
                 )}
 
-                <View className="flex-row mx-6 mb-8 gap-2">
+                <View className="flex-row w-full max-w-md self-center px-6 mb-8 gap-2">
                     {localTuning.map((note, i) => (
                         <TouchableOpacity
                             key={`strip-${i}`}
@@ -170,13 +172,15 @@ export default function GuitarTuningScreen() {
                     ))}
                 </View>
 
-                <PresetList
-                    activeCategory={activeCategory}
-                    setActiveCategory={setActiveCategory}
-                    filteredPresets={filtered}
-                    matchedPresetName={matchedPreset?.name}
-                    onApplyPreset={applyPreset}
-                />
+                <View className="w-full max-w-2xl self-center">
+                    <PresetList
+                        activeCategory={activeCategory}
+                        setActiveCategory={setActiveCategory}
+                        filteredPresets={filtered}
+                        matchedPresetName={matchedPreset?.name}
+                        onApplyPreset={applyPreset}
+                    />
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
