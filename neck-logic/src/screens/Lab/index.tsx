@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './styles';
@@ -16,6 +16,9 @@ type ScaleMode = keyof typeof SCALES | 'custom_notes' | 'custom_intervals';
 
 export default function LabScreen() {
     const { tuning } = useAuth();
+    const { width } = useWindowDimensions();
+
+    const displayFrets = width > 768 ? 24 : 15;
 
     const [rootNote, setRootNote] = useState('C');
     const [scaleMode, setScaleMode] = useState<ScaleMode>('major');
@@ -61,8 +64,8 @@ export default function LabScreen() {
     }, [rootNote, activeNotes, scaleMode]);
 
     const fretboardPositions = useMemo(() => {
-        return getFretboardPositionsForNotes(activeNotes, tuning, 22, '#00D9FF', rootNote, '#A855F7');
-    }, [activeNotes, tuning, rootNote]);
+        return getFretboardPositionsForNotes(activeNotes, tuning, displayFrets, '#00D9FF', rootNote, '#A855F7');
+    }, [activeNotes, tuning, rootNote, displayFrets]);
 
     const toggleCustomNote = (note: string) => {
         if (note === rootNote) return;
@@ -96,24 +99,20 @@ export default function LabScreen() {
                     <Text className={styles.subtitle}>Explore o braço e construa seu vocabulário</Text>
                 </View>
 
-                <View className={styles.card}>
-                    <View className={styles.displayHeader}>
-                        <Text className={styles.displayTitle}>{rootNote} {displayScaleName}</Text>
-                        <Text className={styles.displayFormula}>Fórmula: {activeFormula}</Text>
-                    </View>
-
-                    <View className={styles.notesRow}>
+                <View className={styles.activeScaleContainer}>
+                    <Text className={styles.activeScaleTitle}>{rootNote} {displayScaleName}</Text>
+                    <Text className={styles.activeScaleFormula}>Fórmula: {activeFormula}</Text>
+                    <View className={styles.activeScaleNotesRow}>
                         {activeNotes.map((note, index) => {
                             const isRoot = note === rootNote;
+                            const isLast = index === activeNotes.length - 1;
                             return (
-                                <View
-                                    key={`badge-${index}`}
-                                    className={`${styles.noteBadge} ${isRoot ? styles.noteBadgeRoot : styles.noteBadgeNormal}`}
-                                >
-                                    <Text className={isRoot ? styles.noteBadgeTextRoot : styles.noteBadgeTextNormal}>
+                                <Text key={`note-text-${index}`}>
+                                    <Text className={isRoot ? styles.textNoteRoot : styles.textNoteNormal}>
                                         {note}
                                     </Text>
-                                </View>
+                                    {!isLast && <Text className={styles.textNoteSeparator}>  •  </Text>}
+                                </Text>
                             );
                         })}
                     </View>
@@ -124,7 +123,7 @@ export default function LabScreen() {
                         <Text className={styles.fretboardTitle}>Mapeamento do Braço</Text>
                     </View>
                     <Fretboard
-                        frets={15}
+                        frets={displayFrets}
                         notes={fretboardPositions}
                         autoScroll={false}
                     />
