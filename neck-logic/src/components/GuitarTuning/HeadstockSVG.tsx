@@ -56,8 +56,8 @@ export function HeadstockSVG({ tuning, selectedString, onSelectString }: Headsto
                     </LinearGradient>
                 </Defs>
 
-                <Rect x="108" y="306" width="64" height="84" rx="5" fill="url(#neckGrad)" />
-                <Line x1="140" y1="306" x2="140" y2="390" stroke={strokeColor} strokeWidth="0.6" />
+                <Rect x="98" y="306" width="64" height="84" rx="5" fill="url(#neckGrad)" />
+                <Line x1="130" y1="306" x2="130" y2="390" stroke={strokeColor} strokeWidth="0.6" />
 
                 <Path
                     d="M 97,302 C 80,280 58,256 58,240 L 58,28 Q 58,10 80,10 L 180,10 Q 202,10 202,28 L 202,240 C 202,256 180,280 163,302 Z"
