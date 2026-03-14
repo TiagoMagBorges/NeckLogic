@@ -33,6 +33,11 @@ export function getNoteAtFret(openNote: string, fret: number): string {
     return CHROMATIC_SCALE[noteIndex];
 }
 
+export function getNoteFromStringAndFret(stringNum: number, fret: number, tuning: string[]): string {
+    const openNote = tuning[6 - stringNum];
+    return getNoteAtFret(openNote, fret);
+}
+
 export function getFretboardPositionsForNotes(
     targetNotes: string[],
     tuning: string[] = TUNINGS.STANDARD,
@@ -44,11 +49,9 @@ export function getFretboardPositionsForNotes(
     const positions: FretboardNote[] = [];
     const targets = targetNotes.map(n => n.toUpperCase());
 
-    tuning.forEach((openNote, stringIndex) => {
-        const stringNum = 6 - stringIndex;
-
+    for (let stringNum = 1; stringNum <= 6; stringNum++) {
         for (let fret = 0; fret <= maxFrets; fret++) {
-            const currentNote = getNoteAtFret(openNote, fret);
+            const currentNote = getNoteFromStringAndFret(stringNum, fret, tuning);
 
             if (targets.includes(currentNote)) {
                 const isRoot = rootNote && currentNote === rootNote.toUpperCase();
@@ -60,7 +63,7 @@ export function getFretboardPositionsForNotes(
                 });
             }
         }
-    });
+    }
 
     return positions;
 }

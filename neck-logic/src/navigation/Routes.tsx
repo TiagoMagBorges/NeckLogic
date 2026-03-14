@@ -34,9 +34,9 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Routes() {
-    const { signed, loading, onboardingCompleted } = useAuth();
+    const { signed, isInitializing, onboardingCompleted } = useAuth();
 
-    if (loading) {
+    if (isInitializing) {
         return (
             <View className="flex-1 justify-center items-center bg-background">
                 <ActivityIndicator size="large" color="#00D9FF" />
