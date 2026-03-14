@@ -5,7 +5,7 @@ import { X } from 'lucide-react-native';
 
 import { styles, getProgressStyle } from './styles';
 import { Fretboard, FretboardNote } from '../../components/Fretboard';
-import { getNoteAtFret, getFretboardPositionsForNotes, TUNINGS } from '../../core/MusicEngine';
+import { getNoteFromStringAndFret, getFretboardPositionsForNotes } from '../../core/MusicEngine';
 import { useLesson } from '../../hooks/useLesson';
 
 export default function LessonScreen() {
@@ -19,7 +19,8 @@ export default function LessonScreen() {
         checkResult,
         handleAction,
         handleFretPress,
-        goBack
+        goBack,
+        tuning
     } = useLesson();
 
     const notesToRender = useMemo(() => {
@@ -35,7 +36,7 @@ export default function LessonScreen() {
                     ...notes,
                     ...getFretboardPositionsForNotes(
                         config.highlightNotes,
-                        config.tuning || TUNINGS.STANDARD,
+                        config.tuning || tuning,
                         config.frets || 22
                     )
                 ];
@@ -49,10 +50,10 @@ export default function LessonScreen() {
 
                 if (checkResult === 'CORRECT') {
                     color = '#10B981';
-                    label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
+                    label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 } else if (checkResult === 'INCORRECT') {
                     color = '#EF4444';
-                    label = getNoteAtFret(TUNINGS.STANDARD[selectedFret.string - 1], selectedFret.fret);
+                    label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 }
 
                 notes.push({
@@ -65,7 +66,7 @@ export default function LessonScreen() {
         }
 
         return notes;
-    }, [currentStep, selectedFrets, checkResult]);
+    }, [currentStep, selectedFrets, checkResult, tuning]);
 
     if (loading || !currentStep) {
         return (

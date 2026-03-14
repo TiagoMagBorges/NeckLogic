@@ -10,6 +10,7 @@ export interface User {
 interface AuthContextData {
     signed: boolean;
     loading: boolean;
+    isInitializing: boolean;
     onboardingCompleted: boolean;
     xp: number;
     level: number;
@@ -32,7 +33,8 @@ const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [signed, setSigned] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // Agora começa como false
+    const [isInitializing, setIsInitializing] = useState(true); // Novo estado para o root do app
     const [onboardingCompleted, setOnboardingCompleted] = useState(false);
     const [xp, setXp] = useState(0);
     const [level, setLevel] = useState(1);
@@ -66,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setTuning(JSON.parse(storageTuning));
                 }
             }
-            setLoading(false);
+            setIsInitializing(false); // Libera o app após carregar os dados persistidos
         }
 
         loadStorageData();
@@ -216,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         <AuthContext.Provider value={{
             signed,
             loading,
+            isInitializing,
             onboardingCompleted,
             xp,
             level,
