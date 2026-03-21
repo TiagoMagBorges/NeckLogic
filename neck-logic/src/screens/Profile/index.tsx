@@ -1,19 +1,22 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Trophy, Zap, Moon, Sun, Flame, SlidersHorizontal, ChevronRight } from 'lucide-react-native';
+import { Trophy, Zap, Moon, Sun, Flame, SlidersHorizontal, ChevronRight, Globe } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { styles } from './styles';
 import { RootStackParamList } from '../../navigation/Routes';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { LanguageSelector } from '../../components/LanguageSelector';
 
 export default function ProfileScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { user, xp, level, streak, tuning } = useAuth();
     const { isDarkTheme, toggleTheme } = useTheme();
+    const { t } = useTranslation();
 
     const getInitials = (name?: string) => {
         if (!name) return 'US';
@@ -23,9 +26,9 @@ export default function ProfileScreen() {
     };
 
     const stats = [
-        { label: 'Total XP', value: xp.toString(), icon: Flame, color: '#00D9FF' },
-        { label: 'Level', value: level.toString(), icon: Trophy, color: '#A855F7' },
-        { label: 'Ofensiva', value: `${streak} dias`, icon: Zap, color: '#10B981' },
+        { label: t('profile.totalXp'), value: xp.toString(), icon: Flame, color: '#00D9FF' },
+        { label: t('profile.level'), value: level.toString(), icon: Trophy, color: '#A855F7' },
+        { label: t('profile.streak'), value: `${streak} ${t('profile.days')}`, icon: Zap, color: '#10B981' },
     ];
 
     const currentLevelBaseXp = Math.pow(10 * (level - 1), 2);
@@ -42,7 +45,7 @@ export default function ProfileScreen() {
                     <View className={styles.avatarContainer}>
                         <Text className={styles.avatarText}>{getInitials(user?.name)}</Text>
                     </View>
-                    <Text className={styles.nameText}>{user?.name || 'Usuário'}</Text>
+                    <Text className={styles.nameText}>{user?.name || t('profile.defaultUser')}</Text>
                     <Text className={styles.emailText}>{user?.email}</Text>
                 </View>
 
@@ -67,7 +70,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View className={styles.progressSection}>
-                    <Text className={styles.sectionTitle}>Nivelamento de Fretboard</Text>
+                    <Text className={styles.sectionTitle}>{t('profile.fretboardLeveling')}</Text>
 
                     <View className={styles.progressRow}>
                         <View className={styles.chartPlaceholder}>
@@ -76,7 +79,7 @@ export default function ProfileScreen() {
 
                         <View className={styles.progressDetails}>
                             <View className={styles.progressHeader}>
-                                <Text className={styles.progressLabel}>Próximo Nível</Text>
+                                <Text className={styles.progressLabel}>{t('profile.nextLevel')}</Text>
                                 <Text className={styles.progressFraction}>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</Text>
                             </View>
 
@@ -85,7 +88,7 @@ export default function ProfileScreen() {
                             </View>
 
                             <Text className={styles.progressDescription}>
-                                Continue a trilha para expandir seu vocabulário no braço.
+                                {t('profile.keepGoing')}
                             </Text>
                         </View>
                     </View>
@@ -101,7 +104,7 @@ export default function ProfileScreen() {
                         <View className="flex-row items-center">
                             <SlidersHorizontal size={24} color="#00D9FF" />
                             <View className="ml-3">
-                                <Text className="font-medium text-foreground">Afinação da Guitarra</Text>
+                                <Text className="font-medium text-foreground">{t('profile.tuning')}</Text>
                                 <Text className="text-sm text-muted-foreground mt-0.5 tracking-widest">{tuning.join(' ')}</Text>
                             </View>
                         </View>
@@ -116,9 +119,9 @@ export default function ProfileScreen() {
                                 <Sun size={24} color="#00B8D4" />
                             )}
                             <View className={styles.themeTextContainer}>
-                                <Text className={styles.themeTitle}>Theme</Text>
+                                <Text className={styles.themeTitle}>{t('profile.theme')}</Text>
                                 <Text className={styles.themeDesc}>
-                                    {isDarkTheme ? 'Dark Mode' : 'Light Mode'}
+                                    {isDarkTheme ? t('profile.darkMode') : t('profile.lightMode')}
                                 </Text>
                             </View>
                         </View>
@@ -131,15 +134,24 @@ export default function ProfileScreen() {
                         />
                     </View>
 
+                    <View className="flex-row items-center justify-between bg-card border border-border/10 p-5 rounded-xl mt-4 mb-4">
+                        <View className="flex-row items-center">
+                            <Globe size={24} color="#00D9FF" />
+                            <View className="ml-3">
+                                <Text className="font-medium text-foreground">{t('profile.language')}</Text>
+                            </View>
+                        </View>
+                        <LanguageSelector />
+                    </View>
+
                     <TouchableOpacity
                         className={styles.accountButton}
                         activeOpacity={0.8}
                         onPress={() => navigation.navigate('AccountSettings')}
                     >
-                        <Text className={styles.accountButtonText}>Account Settings</Text>
+                        <Text className={styles.accountButtonText}>{t('profile.accountSettings')}</Text>
                     </TouchableOpacity>
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );

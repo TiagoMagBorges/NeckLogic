@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { styles, getProgressStyle } from './styles';
 import { Fretboard, FretboardNote } from '../../components/Fretboard';
@@ -22,6 +23,8 @@ export default function LessonScreen() {
         goBack,
         tuning
     } = useLesson();
+
+    const { t } = useTranslation();
 
     const notesToRender = useMemo(() => {
         let notes: FretboardNote[] = [];
@@ -76,15 +79,15 @@ export default function LessonScreen() {
         );
     }
 
-    let buttonText = currentStepIndex === steps.length - 1 ? 'Concluir' : 'Próximo';
+    let buttonText = currentStepIndex === steps.length - 1 ? t('lesson.complete') : t('lesson.next');
     let isButtonDisabled = false;
 
     if (currentStep.type === 'DRILL') {
         if (checkResult === 'IDLE') {
-            buttonText = 'Conferir';
+            buttonText = t('lesson.check');
             isButtonDisabled = selectedFrets.length === 0;
         } else if (checkResult === 'INCORRECT') {
-            buttonText = 'Tentar Novamente';
+            buttonText = t('lesson.tryAgain');
         }
     }
 
@@ -113,7 +116,7 @@ export default function LessonScreen() {
 
                 {currentStep.imageUrl && (
                     <View className={styles.imageContainer}>
-                        <Text className={styles.imagePlaceholderText}>Image: {currentStep.imageUrl}</Text>
+                        <Text className={styles.imagePlaceholderText}>{t('lesson.image')} {currentStep.imageUrl}</Text>
                     </View>
                 )}
 

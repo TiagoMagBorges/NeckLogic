@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setTuning(JSON.parse(storageTuning));
                 }
             }
-            setIsInitializing(false); // Libera o app após carregar os dados persistidos
+            setIsInitializing(false);
         }
 
         loadStorageData();

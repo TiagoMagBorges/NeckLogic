@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import i18n from '../i18n';
 
 import { api } from '../services/api';
 import { LessonContentDTO, LessonStep } from '../types/Lesson';
@@ -37,11 +38,11 @@ export function useLesson() {
             if (Array.isArray(parsedSteps) && parsedSteps.length > 0) {
                 setSteps(parsedSteps);
             } else {
-                Alert.alert("Aviso", "Esta aula ainda não tem conteúdo.");
+                Alert.alert(i18n.t('hooks.lessonEmptyTitle'), i18n.t('hooks.lessonEmptyDesc'));
                 navigation.goBack();
             }
         } catch (error) {
-            Alert.alert("Erro", "Falha ao carregar a aula.");
+            Alert.alert(i18n.t('common.error'), i18n.t('hooks.lessonLoadError'));
             navigation.goBack();
         } finally {
             setLoading(false);
@@ -119,7 +120,7 @@ export function useLesson() {
                 });
 
             } catch (error: any) {
-                Alert.alert("Erro", "Não foi possível salvar o progresso.");
+                Alert.alert(i18n.t('common.error'), i18n.t('hooks.lessonSaveError'));
             } finally {
                 setIsSaving(false);
             }

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft, LogOut, User as UserIcon, Mail, Save, Lock, Trash2 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { profileSchema, passwordSchema } from '../../validations/profile';
@@ -22,6 +23,7 @@ type ModalConfig = {
 export default function AccountSettingsScreen() {
     const navigation = useNavigation();
     const { user, updateAccountProfile, updatePassword, deleteAccount, signOut } = useAuth();
+    const { t } = useTranslation();
 
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
@@ -47,7 +49,7 @@ export default function AccountSettingsScreen() {
 
         if (!validation.success) {
             showModal({
-                title: 'Verifique os dados',
+                title: t('account.modalCheckData'),
                 message: validation.error.issues[0].message,
                 type: 'error',
                 onConfirm: hideModal
@@ -60,21 +62,21 @@ export default function AccountSettingsScreen() {
         try {
             await updateAccountProfile(validation.data);
             showModal({
-                title: 'Tudo certo',
-                message: 'Seus dados pessoais foram salvos com sucesso.',
+                title: t('account.modalProfileSuccess'),
+                message: t('account.modalProfileSuccessDesc'),
                 type: 'success',
                 onConfirm: hideModal
             });
         } catch (error: any) {
             const status = error.response?.status;
-            let errorMessage = 'Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.';
+            let errorMessage = t('account.modalErrorNetwork');
 
             if (status === 400 || status === 409) {
-                errorMessage = error.response?.data?.message || 'Os dados fornecidos são inválidos.';
+                errorMessage = error.response?.data?.message || t('register.errorInvalid');
             }
 
             showModal({
-                title: 'Ops, algo deu errado',
+                title: t('account.modalError'),
                 message: errorMessage,
                 type: 'error',
                 onConfirm: hideModal
@@ -89,7 +91,7 @@ export default function AccountSettingsScreen() {
 
         if (!validation.success) {
             showModal({
-                title: 'Verifique os dados',
+                title: t('account.modalCheckData'),
                 message: validation.error.issues[0].message,
                 type: 'error',
                 onConfirm: hideModal
@@ -102,8 +104,8 @@ export default function AccountSettingsScreen() {
         try {
             await updatePassword({ currentPassword, newPassword });
             showModal({
-                title: 'Segurança',
-                message: 'Sua senha foi atualizada e já está ativa.',
+                title: t('account.modalSecurity'),
+                message: t('account.modalPasswordSuccess'),
                 type: 'success',
                 onConfirm: hideModal
             });
@@ -112,14 +114,14 @@ export default function AccountSettingsScreen() {
             setConfirmPassword('');
         } catch (error: any) {
             const status = error.response?.status;
-            let errorMessage = 'Não conseguimos atualizar sua senha agora. Tente novamente mais tarde.';
+            let errorMessage = t('account.modalPasswordError');
 
             if (status === 400) {
-                errorMessage = error.response?.data?.message || 'A senha atual informada está incorreta.';
+                errorMessage = error.response?.data?.message || t('account.modalErrorNetwork');
             }
 
             showModal({
-                title: 'Não foi possível atualizar',
+                title: t('account.modalError'),
                 message: errorMessage,
                 type: 'error',
                 onConfirm: hideModal
@@ -131,11 +133,11 @@ export default function AccountSettingsScreen() {
 
     const handleSignOut = () => {
         showModal({
-            title: 'Sair da Sessão',
-            message: 'Tem certeza que deseja desconectar sua conta deste dispositivo?',
+            title: t('account.modalSignOutTitle'),
+            message: t('account.modalSignOutDesc'),
             type: 'warning',
-            confirmText: 'Sim, Sair',
-            cancelText: 'Cancelar',
+            confirmText: t('account.modalYesSignOut'),
+            cancelText: t('account.modalCancel'),
             onCancel: hideModal,
             onConfirm: () => {
                 hideModal();
@@ -146,11 +148,11 @@ export default function AccountSettingsScreen() {
 
     const handleDeleteAccount = () => {
         showModal({
-            title: 'Excluir Conta',
-            message: 'Esta ação apagará todo o seu progresso no fretboard e não poderá ser desfeita. Tem certeza que deseja nos deixar?',
+            title: t('account.modalDeleteTitle'),
+            message: t('account.modalDeleteDesc'),
             type: 'warning',
-            confirmText: 'Sim, Excluir',
-            cancelText: 'Cancelar',
+            confirmText: t('account.modalYesDelete'),
+            cancelText: t('account.modalCancel'),
             onCancel: hideModal,
             onConfirm: async () => {
                 hideModal();
@@ -159,8 +161,8 @@ export default function AccountSettingsScreen() {
                 } catch (error) {
                     setTimeout(() => {
                         showModal({
-                            title: 'Não foi possível excluir',
-                            message: 'Enfrentamos uma instabilidade ao tentar remover seus dados. Por favor, tente novamente.',
+                            title: t('account.modalDeleteErrorTitle'),
+                            message: t('account.modalDeleteErrorDesc'),
                             type: 'error',
                             onConfirm: hideModal
                         });
@@ -176,25 +178,24 @@ export default function AccountSettingsScreen() {
                 <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
                     <ChevronLeft size={24} color="#A1A1AA" />
                 </TouchableOpacity>
-                <Text className="text-xl font-bold text-foreground">Account Settings</Text>
+                <Text className="text-xl font-bold text-foreground">{t('account.title')}</Text>
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>
-
                 <View className="mb-8">
                     <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        Informações Pessoais
+                        {t('account.personalInfo')}
                     </Text>
 
                     <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">Nome</Text>
+                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.nameLabel')}</Text>
                         <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
                             <UserIcon size={20} color="#A1A1AA" />
                             <TextInput
                                 className="flex-1 ml-3 text-foreground font-medium"
                                 value={name}
                                 onChangeText={setName}
-                                placeholder="Seu nome"
+                                placeholder={t('account.namePlaceholder')}
                                 placeholderTextColor="#52525B"
                                 autoCapitalize="words"
                             />
@@ -202,14 +203,14 @@ export default function AccountSettingsScreen() {
                     </View>
 
                     <View className="mb-6">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">E-mail</Text>
+                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.emailLabel')}</Text>
                         <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
                             <Mail size={20} color="#A1A1AA" />
                             <TextInput
                                 className="flex-1 ml-3 text-foreground font-medium"
                                 value={email}
                                 onChangeText={setEmail}
-                                placeholder="seu@email.com"
+                                placeholder={t('account.emailPlaceholder')}
                                 placeholderTextColor="#52525B"
                                 keyboardType="email-address"
                                 autoCapitalize="none"
@@ -228,7 +229,7 @@ export default function AccountSettingsScreen() {
                         ) : (
                             <>
                                 <Save size={20} color="#121212" className="mr-2" />
-                                <Text className="text-[#121212] font-bold text-lg">Salvar Perfil</Text>
+                                <Text className="text-[#121212] font-bold text-lg">{t('account.saveProfile')}</Text>
                             </>
                         )}
                     </TouchableOpacity>
@@ -236,11 +237,11 @@ export default function AccountSettingsScreen() {
 
                 <View className="mb-8 border-t border-border/10 pt-8">
                     <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        Segurança
+                        {t('account.security')}
                     </Text>
 
                     <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">Senha Atual</Text>
+                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.currentPassword')}</Text>
                         <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
                             <Lock size={20} color="#A1A1AA" />
                             <TextInput
@@ -255,14 +256,14 @@ export default function AccountSettingsScreen() {
                     </View>
 
                     <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">Nova Senha</Text>
+                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.newPassword')}</Text>
                         <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
                             <Lock size={20} color="#A1A1AA" />
                             <TextInput
                                 className="flex-1 ml-3 text-foreground font-medium"
                                 value={newPassword}
                                 onChangeText={setNewPassword}
-                                placeholder="Mínimo 6 caracteres"
+                                placeholder={t('account.newPasswordPlaceholder')}
                                 placeholderTextColor="#52525B"
                                 secureTextEntry
                             />
@@ -270,7 +271,7 @@ export default function AccountSettingsScreen() {
                     </View>
 
                     <View className="mb-6">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">Confirmar Nova Senha</Text>
+                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.confirmPassword')}</Text>
                         <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
                             <Lock size={20} color="#A1A1AA" />
                             <TextInput
@@ -293,14 +294,14 @@ export default function AccountSettingsScreen() {
                         {isSavingPassword ? (
                             <ActivityIndicator color="#FFFFFF" />
                         ) : (
-                            <Text className="text-foreground font-bold text-lg">Atualizar Senha</Text>
+                            <Text className="text-foreground font-bold text-lg">{t('account.updatePassword')}</Text>
                         )}
                     </TouchableOpacity>
                 </View>
 
                 <View className="mb-8 border-t border-border/10 pt-8">
                     <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        Ações da Conta
+                        {t('account.accountActions')}
                     </Text>
                     <TouchableOpacity
                         onPress={handleSignOut}
@@ -308,13 +309,13 @@ export default function AccountSettingsScreen() {
                         className="flex-row items-center bg-card border border-border/10 py-4 px-4 rounded-xl mb-4"
                     >
                         <LogOut size={20} color="#A1A1AA" className="mr-3" />
-                        <Text className="text-foreground font-medium text-base">Sair da Sessão</Text>
+                        <Text className="text-foreground font-medium text-base">{t('account.signOut')}</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View className="mt-2 border-t border-border/10 pt-8 mb-10">
                     <Text className="text-sm font-semibold text-destructive mb-4 uppercase tracking-wider">
-                        Zona de Perigo
+                        {t('account.dangerZone')}
                     </Text>
                     <TouchableOpacity
                         onPress={handleDeleteAccount}
@@ -322,10 +323,9 @@ export default function AccountSettingsScreen() {
                         className="flex-row items-center justify-center bg-destructive/10 border border-destructive/20 py-4 rounded-xl"
                     >
                         <Trash2 size={20} color="#EF4444" className="mr-2" />
-                        <Text className="text-destructive font-bold text-lg">Excluir Minha Conta</Text>
+                        <Text className="text-destructive font-bold text-lg">{t('account.deleteAccount')}</Text>
                     </TouchableOpacity>
                 </View>
-
             </ScrollView>
 
             <FeedbackModal
