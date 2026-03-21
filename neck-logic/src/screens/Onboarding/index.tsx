@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Target, Zap, Flame } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../services/api';
@@ -11,6 +12,7 @@ type Level = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 
 export default function OnboardingScreen() {
     const { completeOnboarding } = useAuth();
+    const { t } = useTranslation();
     const [isProcessing, setIsProcessing] = useState(false);
 
     const handleSelectLevel = async (level: Level) => {
@@ -25,7 +27,7 @@ export default function OnboardingScreen() {
             await completeOnboarding();
         } catch (error) {
             console.error(error);
-            Alert.alert('Erro', 'Ocorreu um problema ao configurar seu nível.');
+            Alert.alert(t('onboarding.errorTitle'), t('onboarding.errorDesc'));
             setIsProcessing(false);
         }
     };
@@ -34,9 +36,9 @@ export default function OnboardingScreen() {
         <SafeAreaView className={styles.safeArea}>
             <View className={styles.container}>
                 <View className={styles.header}>
-                    <Text className={styles.title}>Qual o seu nível?</Text>
+                    <Text className={styles.title}>{t('onboarding.title')}</Text>
                     <Text className={styles.subtitle}>
-                        Ajustaremos a trilha inicial baseada no seu conhecimento atual do braço da guitarra.
+                        {t('onboarding.subtitle')}
                     </Text>
                 </View>
 
@@ -50,8 +52,8 @@ export default function OnboardingScreen() {
                             <Target size={24} color="#00D9FF" />
                         </View>
                         <View className={styles.optionTextContainer}>
-                            <Text className={styles.optionTitle}>Iniciante</Text>
-                            <Text className={styles.optionDescription}>Estou começando do zero.</Text>
+                            <Text className={styles.optionTitle}>{t('onboarding.beginner')}</Text>
+                            <Text className={styles.optionDescription}>{t('onboarding.beginnerDesc')}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -64,8 +66,8 @@ export default function OnboardingScreen() {
                             <Zap size={24} color="#00D9FF" />
                         </View>
                         <View className={styles.optionTextContainer}>
-                            <Text className={styles.optionTitle}>Intermediário</Text>
-                            <Text className={styles.optionDescription}>Já conheço as notas e navegação básica.</Text>
+                            <Text className={styles.optionTitle}>{t('onboarding.intermediate')}</Text>
+                            <Text className={styles.optionDescription}>{t('onboarding.intermediateDesc')}</Text>
                         </View>
                     </TouchableOpacity>
 
@@ -78,8 +80,8 @@ export default function OnboardingScreen() {
                             <Flame size={24} color="#00D9FF" />
                         </View>
                         <View className={styles.optionTextContainer}>
-                            <Text className={styles.optionTitle}>Avançado</Text>
-                            <Text className={styles.optionDescription}>Quero focar em harmonia e intervalos.</Text>
+                            <Text className={styles.optionTitle}>{t('onboarding.advanced')}</Text>
+                            <Text className={styles.optionDescription}>{t('onboarding.advancedDesc')}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>

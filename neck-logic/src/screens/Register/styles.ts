@@ -3,9 +3,9 @@ export const styles = {
     keyboardView: "flex-1 w-full",
     scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 24 } as const,
 
-    wrapper: "w-full max-w-[400px]",
+    wrapper: "w-full max-w-[400px] pt-12",
 
-    backButton: "flex-row items-center gap-2 mb-6 self-start",
+    backButton: "absolute top-6 left-6 z-50 flex-row items-center gap-2 py-2",
     backText: "text-sm text-muted-foreground font-medium",
 
     headerContainer: "items-center mb-10",
@@ -29,15 +29,6 @@ export const styles = {
 
     buttonBase: "w-full py-4 rounded-xl items-center mt-4",
     buttonText: "text-primary-foreground font-bold text-base",
-
-    dividerContainer: "flex-row items-center my-8",
-    dividerLine: "flex-1 h-[1px] bg-border",
-    dividerText: "mx-4 text-sm text-muted-foreground",
-
-    socialContainer: "gap-4",
-    socialButton: "w-full bg-card border border-border py-4 rounded-xl flex-row items-center justify-center gap-3",
-    socialText: "text-foreground font-medium",
-    googleText: "text-foreground font-bold text-lg",
 
     footerContainer: "flex-row justify-center mt-8",
     footerText: "text-sm text-muted-foreground",

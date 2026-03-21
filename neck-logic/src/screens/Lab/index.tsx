@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { styles } from './styles';
 import { Fretboard } from '../../components/Fretboard';
@@ -17,6 +18,7 @@ type ScaleMode = keyof typeof SCALES | 'custom_notes' | 'custom_intervals';
 export default function LabScreen() {
     const { tuning } = useAuth();
     const { width } = useWindowDimensions();
+    const { t } = useTranslation();
 
     const displayFrets = width > 768 ? 24 : 15;
 
@@ -85,23 +87,23 @@ export default function LabScreen() {
     };
 
     const displayScaleName = useMemo(() => {
-        if (scaleMode === 'custom_notes') return 'Custom (Notas)';
-        if (scaleMode === 'custom_intervals') return 'Custom (Intervalos)';
+        if (scaleMode === 'custom_notes') return t('lab.customNotes');
+        if (scaleMode === 'custom_intervals') return t('lab.customIntervals');
         return SCALES[scaleMode as keyof typeof SCALES].name;
-    }, [scaleMode]);
+    }, [scaleMode, t]);
 
     return (
         <SafeAreaView className={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                 <View className={styles.header}>
-                    <Text className={styles.title}>Scale Lab</Text>
-                    <Text className={styles.subtitle}>Explore o braço e construa seu vocabulário</Text>
+                    <Text className={styles.title}>{t('lab.title')}</Text>
+                    <Text className={styles.subtitle}>{t('lab.subtitle')}</Text>
                 </View>
 
                 <View className={styles.activeScaleContainer}>
                     <Text className={styles.activeScaleTitle}>{rootNote} {displayScaleName}</Text>
-                    <Text className={styles.activeScaleFormula}>Fórmula: {activeFormula}</Text>
+                    <Text className={styles.activeScaleFormula}>{t('lab.formula')} {activeFormula}</Text>
                     <View className={styles.activeScaleNotesRow}>
                         {activeNotes.map((note, index) => {
                             const isRoot = note === rootNote;
@@ -120,7 +122,7 @@ export default function LabScreen() {
 
                 <View className={styles.fretboardContainer}>
                     <View className={styles.fretboardHeader}>
-                        <Text className={styles.fretboardTitle}>Mapeamento do Braço</Text>
+                        <Text className={styles.fretboardTitle}>{t('lab.mapping')}</Text>
                     </View>
                     <Fretboard
                         frets={displayFrets}
@@ -131,15 +133,15 @@ export default function LabScreen() {
 
                 <View className={`${styles.statsRow} mb-8`}>
                     <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>Notas</Text>
+                        <Text className={styles.statLabel}>{t('lab.notes')}</Text>
                         <Text className={styles.statValueBlue}>{activeNotes.length}</Text>
                     </View>
                     <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>Root</Text>
+                        <Text className={styles.statLabel}>{t('lab.root')}</Text>
                         <Text className={styles.statValuePurple}>{rootNote}</Text>
                     </View>
                     <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>Tipo</Text>
+                        <Text className={styles.statLabel}>{t('lab.type')}</Text>
                         <Text className={styles.statValueGreen} numberOfLines={1} adjustsFontSizeToFit>
                             {displayScaleName.split(' ')[0]}
                         </Text>
@@ -147,7 +149,7 @@ export default function LabScreen() {
                 </View>
 
                 <View className={styles.card}>
-                    <Text className={styles.cardTitle}>Nota Tônica (Root)</Text>
+                    <Text className={styles.cardTitle}>{t('lab.rootSelection')}</Text>
                     <View className={styles.gridList}>
                         {CHROMATIC_SCALE.map((note) => {
                             const isSelected = note === rootNote;
@@ -168,7 +170,7 @@ export default function LabScreen() {
                 </View>
 
                 <View className={styles.card}>
-                    <Text className={styles.cardTitle}>Tipo de Escala / Shape</Text>
+                    <Text className={styles.cardTitle}>{t('lab.shapeSelection')}</Text>
 
                     {Object.entries(SCALES).map(([key, scale]) => (
                         <TouchableOpacity
@@ -189,7 +191,7 @@ export default function LabScreen() {
                         className={`${styles.typeButton} ${scaleMode === 'custom_intervals' ? styles.typeButtonActive : 'mt-4'}`}
                     >
                         <Text className={`${styles.typeText} ${scaleMode === 'custom_intervals' ? styles.typeTextActive : ''}`}>
-                            Construir por Intervalos
+                            {t('lab.buildIntervals')}
                         </Text>
                     </TouchableOpacity>
 
@@ -199,14 +201,14 @@ export default function LabScreen() {
                         className={`${styles.typeButton} ${scaleMode === 'custom_notes' ? styles.typeButtonActive : ''}`}
                     >
                         <Text className={`${styles.typeText} ${scaleMode === 'custom_notes' ? styles.typeTextActive : ''}`}>
-                            Construir por Notas Livres
+                            {t('lab.buildNotes')}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
                 {scaleMode === 'custom_intervals' && (
                     <View className={styles.card}>
-                        <Text className={styles.cardTitle}>Selecione os Intervalos</Text>
+                        <Text className={styles.cardTitle}>{t('lab.selectIntervals')}</Text>
                         <View className={styles.gridList}>
                             {INTERVAL_LABELS.map((label, index) => {
                                 const isRoot = index === 0;
@@ -230,7 +232,7 @@ export default function LabScreen() {
 
                 {scaleMode === 'custom_notes' && (
                     <View className={styles.card}>
-                        <Text className={styles.cardTitle}>Selecione as Notas</Text>
+                        <Text className={styles.cardTitle}>{t('lab.selectNotes')}</Text>
                         <View className={styles.gridList}>
                             {CHROMATIC_SCALE.map((note) => {
                                 const isRoot = note === rootNote;

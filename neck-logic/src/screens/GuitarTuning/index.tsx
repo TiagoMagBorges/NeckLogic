@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft, RotateCcw, Check } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -20,6 +21,7 @@ import { PresetList } from '../../components/GuitarTuning/PresetList';
 export default function GuitarTuningScreen() {
     const navigation = useNavigation();
     const { tuning: globalTuning, updateTuning } = useAuth();
+    const { t } = useTranslation();
 
     const [localTuning, setLocalTuning] = useState<string[]>(globalTuning);
     const [selectedString, setSelectedString] = useState<number | null>(null);
@@ -72,7 +74,7 @@ export default function GuitarTuningScreen() {
                 </TouchableOpacity>
 
                 <View className="flex-1">
-                    <Text className="text-xl font-bold text-foreground leading-tight">Guitar Tuning</Text>
+                    <Text className="text-xl font-bold text-foreground leading-tight">{t('tuning.title')}</Text>
                     <Text className="text-sm text-primary">{currentTuningName}</Text>
                 </View>
 
@@ -90,7 +92,7 @@ export default function GuitarTuningScreen() {
                     className={`px-4 h-10 rounded-full flex-row items-center justify-center shrink-0 ${saved ? 'bg-[#10B981]' : 'bg-primary'}`}
                 >
                     {saved && <Check size={16} color="#121212" className="mr-1" />}
-                    <Text className="text-[#121212] font-bold text-sm">{saved ? 'Salvo' : 'Salvar'}</Text>
+                    <Text className="text-[#121212] font-bold text-sm">{saved ? t('tuning.saved') : t('tuning.save')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -104,7 +106,7 @@ export default function GuitarTuningScreen() {
                 </View>
 
                 <Text className="text-center text-xs text-muted-foreground mb-6">
-                    Toque em uma tarraxa para alterar a nota da corda
+                    {t('tuning.instruction')}
                 </Text>
 
                 {selectedString !== null && (
@@ -119,7 +121,7 @@ export default function GuitarTuningScreen() {
                                         {STRING_NAMES[selectedString]}
                                     </Text>
                                     <Text className="text-sm text-foreground">
-                                        · Atual: <Text className="text-primary font-bold">{localTuning[selectedString]}</Text>
+                                        · {t('tuning.current')} <Text className="text-primary font-bold">{localTuning[selectedString]}</Text>
                                     </Text>
                                 </View>
                                 <TouchableOpacity onPress={() => setSelectedString(null)} className="p-1">

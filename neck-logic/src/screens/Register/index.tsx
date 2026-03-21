@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, User, Apple, ArrowLeft, Check } from 'lucide-react-native';
+import { Mail, Lock, User, ArrowLeft, Check } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { styles, getCheckboxStyle, getButtonStyle } from './styles';
 import { FeedbackModal } from '../../components/FeedbackModal';
+import { LanguageDropdown } from '../../components/LanguageDropdown';
 
 export default function RegisterScreen() {
     const navigation = useNavigation<any>();
     const { signUp, loading } = useAuth();
     const { isDarkTheme } = useTheme();
+    const { t } = useTranslation();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -29,14 +32,9 @@ export default function RegisterScreen() {
             await signUp({ name, email, password });
         } catch (error: any) {
             const status = error.response?.status;
-
-            if (status === 409) {
-                setModalMessage('Este e-mail já está cadastrado em nossa plataforma.');
-            } else if (status === 400) {
-                setModalMessage('Os dados fornecidos são inválidos. Verifique as informações e tente novamente.');
-            } else {
-                setModalMessage('Ocorreu um erro interno. Tente novamente mais tarde.');
-            }
+            if (status === 409) setModalMessage(t('register.errorConflict'));
+            else if (status === 400) setModalMessage(t('register.errorInvalid'));
+            else setModalMessage(t('register.errorGeneric'));
 
             setModalVisible(true);
         }
@@ -44,42 +42,41 @@ export default function RegisterScreen() {
 
     return (
         <SafeAreaView className={styles.safeArea}>
+            <LanguageDropdown />
+
+            <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                disabled={loading}
+                className={styles.backButton}
+            >
+                <ArrowLeft size={18} color="#A1A1AA" />
+                <Text className={styles.backText}>{t('register.back')}</Text>
+            </TouchableOpacity>
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className={styles.keyboardView}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <View className={styles.wrapper}>
-                        <TouchableOpacity
-                            onPress={() => navigation.goBack()}
-                            disabled={loading}
-                            className={styles.backButton}
-                        >
-                            <ArrowLeft size={18} color="#A1A1AA" />
-                            <Text className={styles.backText}>Back to login</Text>
-                        </TouchableOpacity>
-
                         <View className={styles.headerContainer}>
                             <Text className={styles.title}>
                                 Neck<Text className={styles.titleAccent}>Logic</Text>
                             </Text>
                             <Text className={styles.subtitle}>
-                                Start your music theory journey
+                                {t('register.subtitle')}
                             </Text>
                         </View>
 
                         <View className={styles.formContainer}>
                             <View className={styles.inputGroup}>
-                                <Text className={styles.label}>Full Name</Text>
+                                <Text className={styles.label}>{t('register.nameLabel')}</Text>
                                 <View className={styles.inputWrapper}>
                                     <View className={styles.iconPosition}>
                                         <User size={18} color="#A1A1AA" />
                                     </View>
                                     <TextInput
-                                        placeholder="John Doe"
+                                        placeholder={t('register.namePlaceholder')}
                                         placeholderTextColor="#A1A1AA"
                                         className={styles.inputBase}
                                         value={name}
@@ -90,13 +87,13 @@ export default function RegisterScreen() {
                             </View>
 
                             <View className={styles.inputGroup}>
-                                <Text className={styles.label}>Email</Text>
+                                <Text className={styles.label}>{t('login.emailLabel')}</Text>
                                 <View className={styles.inputWrapper}>
                                     <View className={styles.iconPosition}>
                                         <Mail size={18} color="#A1A1AA" />
                                     </View>
                                     <TextInput
-                                        placeholder="you@example.com"
+                                        placeholder={t('login.emailPlaceholder')}
                                         placeholderTextColor="#A1A1AA"
                                         className={styles.inputBase}
                                         value={email}
@@ -109,13 +106,13 @@ export default function RegisterScreen() {
                             </View>
 
                             <View className={styles.inputGroup}>
-                                <Text className={styles.label}>Password</Text>
+                                <Text className={styles.label}>{t('login.passwordLabel')}</Text>
                                 <View className={styles.inputWrapper}>
                                     <View className={styles.iconPosition}>
                                         <Lock size={18} color="#A1A1AA" />
                                     </View>
                                     <TextInput
-                                        placeholder="••••••••"
+                                        placeholder={t('login.passwordPlaceholder')}
                                         placeholderTextColor="#A1A1AA"
                                         className={styles.inputBase}
                                         value={password}
@@ -132,18 +129,17 @@ export default function RegisterScreen() {
                                     disabled={loading}
                                     className={`${styles.checkboxBase} ${getCheckboxStyle(termsAccepted)}`}
                                 >
-                                    {/* Corrigido: Cor do ícone de check (V) baseada no tema do botão primário (escuro no escuro, claro no claro) */}
                                     {termsAccepted && <Check size={14} color={isDarkTheme ? "#121212" : "#FFFFFF"} />}
                                 </TouchableOpacity>
 
                                 <View className={styles.termsTextWrapper}>
-                                    <Text className={styles.termsText}>I agree to the </Text>
+                                    <Text className={styles.termsText}>{t('register.agreeText')}</Text>
                                     <TouchableOpacity disabled={loading}>
-                                        <Text className={styles.linkText}>Terms of Service</Text>
+                                        <Text className={styles.linkText}>{t('register.termsLink')}</Text>
                                     </TouchableOpacity>
-                                    <Text className={styles.termsText}> and </Text>
+                                    <Text className={styles.termsText}>{t('register.andText')}</Text>
                                     <TouchableOpacity disabled={loading}>
-                                        <Text className={styles.linkText}>Privacy Policy</Text>
+                                        <Text className={styles.linkText}>{t('register.privacyLink')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -152,38 +148,20 @@ export default function RegisterScreen() {
                                 onPress={handleCreateAccount}
                                 activeOpacity={0.8}
                                 disabled={loading || !termsAccepted}
-                                className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
+                                className={`${styles.buttonBase} ${getButtonStyle(loading)} mt-6`}
                             >
                                 {loading ? (
                                     <ActivityIndicator color={isDarkTheme ? "#121212" : "#FFFFFF"} />
                                 ) : (
-                                    <Text className={styles.buttonText}>Create Account</Text>
+                                    <Text className={styles.buttonText}>{t('register.createButton')}</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
 
-                        <View className={styles.dividerContainer}>
-                            <View className={styles.dividerLine} />
-                            <Text className={styles.dividerText}>or sign up with</Text>
-                            <View className={styles.dividerLine} />
-                        </View>
-
-                        <View className={styles.socialContainer}>
-                            <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Apple size={20} color={isDarkTheme ? "#FFFFFF" : "#121212"} />
-                                <Text className={styles.socialText}>Sign up with Apple</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Text className={styles.googleText}>G</Text>
-                                <Text className={styles.socialText}>Sign up with Google</Text>
-                            </TouchableOpacity>
-                        </View>
-
                         <View className={styles.footerContainer}>
-                            <Text className={styles.footerText}>Already have an account?</Text>
+                            <Text className={styles.footerText}>{t('register.hasAccount')}</Text>
                             <TouchableOpacity onPress={() => navigation.goBack()} disabled={loading}>
-                                <Text className={styles.signInText}>Sign in</Text>
+                                <Text className={styles.signInText}>{t('register.signInLink')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -192,10 +170,10 @@ export default function RegisterScreen() {
 
             <FeedbackModal
                 visible={modalVisible}
-                title="Falha no Cadastro"
+                title={t('register.modalTitle')}
                 message={modalMessage}
                 type="error"
-                confirmText="Fechar"
+                confirmText={t('register.modalButton')}
                 onConfirm={() => setModalVisible(false)}
             />
         </SafeAreaView>

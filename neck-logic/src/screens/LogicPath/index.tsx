@@ -5,6 +5,7 @@ import { Check, Lock, FastForward } from 'lucide-react-native';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useTranslation } from 'react-i18next';
 
 import { usePath } from '../../hooks/usePath';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,6 +26,7 @@ export default function LogicPathScreen() {
     const { modules, loading, refetch } = usePath();
     const { xp, level } = useAuth();
     const { isDarkTheme } = useTheme();
+    const { t } = useTranslation();
 
     const [skipModalVisible, setSkipModalVisible] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
@@ -66,7 +68,7 @@ export default function LogicPathScreen() {
 
     const handleSkipSection = async () => {
         if (!selectedSection?.id) {
-            Alert.alert("Aviso", "O ID desta seção não foi encontrado.");
+            Alert.alert(t('path.warningTitle'), t('path.warningDesc'));
             return;
         }
 
@@ -76,7 +78,7 @@ export default function LogicPathScreen() {
             setSkipModalVisible(false);
             if (refetch) refetch();
         } catch (error) {
-            Alert.alert("Erro", "Não foi possível pular esta seção.");
+            Alert.alert(t('path.errorTitle'), t('path.errorDesc'));
         } finally {
             setIsSkipping(false);
         }
@@ -96,14 +98,14 @@ export default function LogicPathScreen() {
                 <View className={styles.contentContainer}>
                     <View className={styles.headerContainer}>
                         <View className={styles.headerTexts}>
-                            <Text className={styles.title}>The Logic Path</Text>
-                            <Text className={styles.subtitle}>Your journey to fretboard mastery</Text>
+                            <Text className={styles.title}>{t('path.title')}</Text>
+                            <Text className={styles.subtitle}>{t('path.subtitle')}</Text>
                         </View>
                     </View>
 
                     <View className={styles.levelCard}>
                         <View className={styles.levelHeader}>
-                            <Text className={styles.levelText}>Nível {level}</Text>
+                            <Text className={styles.levelText}>{t('path.level')} {level}</Text>
                             <Text className={styles.xpText}>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</Text>
                         </View>
                         <View className={styles.progressBarBg}>
@@ -165,7 +167,7 @@ export default function LogicPathScreen() {
                                                     {node.title}
                                                 </Text>
                                                 {node.status === 'CURRENT' && (
-                                                    <Text className={styles.nodeSubtitle}>Continue learning</Text>
+                                                    <Text className={styles.nodeSubtitle}>{t('path.continue')}</Text>
                                                 )}
                                             </View>
 
@@ -180,19 +182,19 @@ export default function LogicPathScreen() {
                     </View>
 
                     <View className={styles.statsCard}>
-                        <Text className={styles.statsTitle}>Your Progress</Text>
+                        <Text className={styles.statsTitle}>{t('path.progressTitle')}</Text>
                         <View className={styles.statsRow}>
                             <View className={styles.statItem}>
                                 <Text className={styles.statValuePrimary}>{completedCount}</Text>
-                                <Text className={styles.statLabel}>COMPLETED</Text>
+                                <Text className={styles.statLabel}>{t('path.completed')}</Text>
                             </View>
                             <View className={styles.statItem}>
                                 <Text className={styles.statValuePrimary}>{currentCount}</Text>
-                                <Text className={styles.statLabel}>IN PROGRESS</Text>
+                                <Text className={styles.statLabel}>{t('path.inProgress')}</Text>
                             </View>
                             <View className={styles.statItem}>
                                 <Text className={styles.statValueMuted}>{lockedCount}</Text>
-                                <Text className={styles.statLabel}>REMAINING</Text>
+                                <Text className={styles.statLabel}>{t('path.remaining')}</Text>
                             </View>
                         </View>
                     </View>

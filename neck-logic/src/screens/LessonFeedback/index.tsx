@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Music, Flame, Crosshair } from 'lucide-react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../../navigation/Routes';
 import { styles } from './styles';
@@ -14,6 +15,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LessonFeedb
 export default function LessonFeedbackScreen() {
     const navigation = useNavigation<NavigationProp>();
     const route = useRoute<LessonFeedbackRouteProp>();
+    const { t } = useTranslation();
 
     const { xpGained, leveledUp, currentLevel, mistakesCount, drillCount } = route.params;
 
@@ -52,10 +54,10 @@ export default function LessonFeedbackScreen() {
             <View className={styles.container}>
 
                 <Text className={styles.title}>
-                    {mistakesCount === 0 ? "Perfect Timing!" : "Sessão Concluída!"}
+                    {mistakesCount === 0 ? t('feedback.perfect') : t('feedback.completed')}
                 </Text>
                 <Text className={styles.subtitle}>
-                    Seu mapa mental do braço está se expandindo.
+                    {t('feedback.expanding')}
                 </Text>
 
                 <View className={styles.notesContainer}>
@@ -100,21 +102,21 @@ export default function LessonFeedbackScreen() {
                     <View className={styles.statCard}>
                         <Flame size={24} color="#00D9FF" className="mb-2" />
                         <Text className={styles.statValuePrimary}>+{xpGained}</Text>
-                        <Text className={styles.statLabel}>XP Gained</Text>
+                        <Text className={styles.statLabel}>{t('feedback.xpGained')}</Text>
                     </View>
 
                     <View className={styles.statCard}>
                         <Crosshair size={24} color="#A1A1AA" className="mb-2" />
                         <Text className={styles.statValueSecondary}>{accuracy}%</Text>
-                        <Text className={styles.statLabel}>Accuracy</Text>
+                        <Text className={styles.statLabel}>{t('feedback.accuracy')}</Text>
                     </View>
                 </View>
 
                 {leveledUp && (
                     <View className={styles.levelUpCard}>
-                        <Text className={styles.levelUpTitle}>Level Up!</Text>
+                        <Text className={styles.levelUpTitle}>{t('feedback.levelUp')}</Text>
                         <Text className={styles.levelUpText}>
-                            Você alcançou o Nível {currentLevel}.
+                            {t('feedback.reachedLevel')} {currentLevel}.
                         </Text>
                     </View>
                 )}
@@ -127,7 +129,7 @@ export default function LessonFeedbackScreen() {
                     onPress={handleContinue}
                     activeOpacity={0.8}
                 >
-                    <Text className={styles.buttonText}>Continuar a Trilha</Text>
+                    <Text className={styles.buttonText}>{t('feedback.continue')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

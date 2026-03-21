@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Modal } from 'react-native';
 import { FastForward } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { styles } from './styles';
 
 interface SkipSectionModalProps {
@@ -12,6 +13,8 @@ interface SkipSectionModalProps {
 }
 
 export function SkipSectionModal({visible, sectionTitle, isSkipping, onClose, onConfirm}: SkipSectionModalProps) {
+    const { t } = useTranslation();
+
     return (
         <Modal
             transparent
@@ -25,9 +28,9 @@ export function SkipSectionModal({visible, sectionTitle, isSkipping, onClose, on
                         <FastForward size={32} color="#00D9FF" />
                     </View>
 
-                    <Text className={styles.modalTitle}>Pular Seção?</Text>
+                    <Text className={styles.modalTitle}>{t('modals.skipTitle')}</Text>
                     <Text className={styles.modalText}>
-                        Tem certeza que deseja marcar todo o conteúdo de "{sectionTitle}" como concluído? Você fará um teste rápido para provar seus conhecimentos.
+                        {t('modals.skipDesc', { section: sectionTitle })}
                     </Text>
 
                     <View className={styles.modalButtons}>
@@ -36,7 +39,7 @@ export function SkipSectionModal({visible, sectionTitle, isSkipping, onClose, on
                             onPress={onClose}
                             disabled={isSkipping}
                         >
-                            <Text className={styles.modalCancelText}>Cancelar</Text>
+                            <Text className={styles.modalCancelText}>{t('common.cancel')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -48,7 +51,7 @@ export function SkipSectionModal({visible, sectionTitle, isSkipping, onClose, on
                                 <ActivityIndicator color="#121212" />
                             ) : (
                                 <>
-                                    <Text className={styles.modalConfirmText}>Fazer Teste</Text>
+                                    <Text className={styles.modalConfirmText}>{t('modals.takeTest')}</Text>
                                     <FastForward size={16} color="#121212" style={{ marginLeft: 8 }} />
                                 </>
                             )}

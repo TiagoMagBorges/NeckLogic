@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import i18n from '../i18n';
+
 import { api } from '../services/api';
 import { ModuleDTO } from '../types/Module';
 
@@ -15,7 +17,7 @@ export function usePath() {
             setModules(response.data);
         } catch (error) {
             console.error(error);
-            Alert.alert("Erro", "Não foi possível carregar sua trilha.");
+            Alert.alert(i18n.t('common.error'), i18n.t('hooks.pathLoadError'));
         } finally {
             setLoading(false);
         }

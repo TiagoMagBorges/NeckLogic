@@ -1,31 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, Apple } from 'lucide-react-native';
+import { Mail, Lock, X, Check } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { styles, getInputStyle, getButtonStyle } from './styles';
 import { FeedbackModal } from '../../components/FeedbackModal';
-
-const loginSchema = z.object({
-    email: z.email({ message: "Digite um e-mail válido" }),
-    password: z.string().min(1, "A senha é obrigatória"),
-});
+import { LanguageDropdown } from '../../components/LanguageDropdown';
+import { ForgotPasswordModal } from '../../components/ForgotPasswordModal';
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
     const { signIn, loading } = useAuth();
     const { isDarkTheme } = useTheme();
+    const { t } = useTranslation();
+
+    const loginSchema = z.object({
+        email: z.email({ message: t('login.errorEmailInvalid') }),
+        password: z.string().min(1, t('login.errorPasswordRequired')),
+    });
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
+    const [forgotModalVisible, setForgotModalVisible] = useState(false);
 
     async function handleLogin() {
         try {
@@ -43,44 +49,37 @@ export default function LoginScreen() {
             }
 
             const status = error.response?.status;
-
-            if (status === 400 || status === 401 || status === 403 || status === 404) {
-                setModalMessage('E-mail ou senha incorretos.');
-            } else {
-                setModalMessage('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
-            }
-
+            setModalMessage(status === 400 || status === 401 || status === 403 || status === 404 ? t('login.errorAuthFailed') : t('login.errorNetwork'));
             setModalVisible(true);
         }
     }
 
     return (
         <SafeAreaView className={styles.container}>
+            <LanguageDropdown />
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className={styles.keyboardView}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <View className={styles.wrapper}>
                         <View className={styles.headerContainer}>
                             <Text className={styles.logoText}>
                                 Neck<Text className={styles.logoAccent}>Logic</Text>
                             </Text>
-                            <Text className={styles.subtitle}>Master the fretboard with precision</Text>
+                            <Text className={styles.subtitle}>{t('login.subtitle')}</Text>
                         </View>
 
                         <View className={styles.formContainer}>
                             <View className={styles.inputGroup}>
-                                <Text className={styles.label}>Email</Text>
+                                <Text className={styles.label}>{t('login.emailLabel')}</Text>
                                 <View className={styles.inputWrapper}>
                                     <View className={styles.iconContainer}>
                                         <Mail size={18} color={errors.email ? "#F87171" : "#A1A1AA"} />
                                     </View>
                                     <TextInput
-                                        placeholder="you@example.com"
+                                        placeholder={t('login.emailPlaceholder')}
                                         placeholderTextColor="#A1A1AA"
                                         className={`${styles.inputBase} ${getInputStyle(!!errors.email)}`}
                                         value={email}
@@ -97,13 +96,13 @@ export default function LoginScreen() {
                             </View>
 
                             <View className={styles.inputGroup}>
-                                <Text className={styles.label}>Password</Text>
+                                <Text className={styles.label}>{t('login.passwordLabel')}</Text>
                                 <View className={styles.inputWrapper}>
                                     <View className={styles.iconContainer}>
                                         <Lock size={18} color={errors.password ? "#F87171" : "#A1A1AA"} />
                                     </View>
                                     <TextInput
-                                        placeholder="••••••••"
+                                        placeholder={t('login.passwordPlaceholder')}
                                         placeholderTextColor="#A1A1AA"
                                         className={`${styles.inputBase} ${getInputStyle(!!errors.password)}`}
                                         value={password}
@@ -116,44 +115,47 @@ export default function LoginScreen() {
                                     />
                                 </View>
                                 {errors.password && <Text className={styles.errorText}>{errors.password}</Text>}
+
+                                <View className="flex-row justify-between items-center mt-2 px-1">
+                                    <TouchableOpacity
+                                        onPress={() => setRememberMe(!rememberMe)}
+                                        activeOpacity={0.8}
+                                        disabled={loading}
+                                        className="flex-row items-center"
+                                    >
+                                        <View className={`w-5 h-5 rounded border items-center justify-center mr-2 ${rememberMe ? 'bg-primary border-primary' : 'bg-input-background border-border'}`}>
+                                            {rememberMe && <Check size={14} color={isDarkTheme ? "#121212" : "#FFFFFF"} />}
+                                        </View>
+                                        <Text className="text-sm text-muted-foreground">{t('login.rememberMe')}</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={() => setForgotModalVisible(true)}
+                                        disabled={loading}
+                                    >
+                                        <Text className="text-primary text-sm font-medium">{t('login.forgotPassword')}</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                             <TouchableOpacity
                                 onPress={handleLogin}
                                 activeOpacity={0.8}
                                 disabled={loading}
-                                className={`${styles.buttonBase} ${getButtonStyle(loading)}`}
+                                className={`${styles.buttonBase} ${getButtonStyle(loading)} mt-4`}
                             >
                                 {loading ? (
                                     <ActivityIndicator color={isDarkTheme ? "#121212" : "#FFFFFF"} />
                                 ) : (
-                                    <Text className={styles.buttonText}>Sign In</Text>
+                                    <Text className={styles.buttonText}>{t('login.signInButton')}</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
 
-                        <View className={styles.dividerContainer}>
-                            <View className={styles.dividerLine} />
-                            <Text className={styles.dividerText}>or continue with</Text>
-                            <View className={styles.dividerLine} />
-                        </View>
-
-                        <View className={styles.socialContainer}>
-                            <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Apple size={20} color={isDarkTheme ? "#FFFFFF" : "#121212"} />
-                                <Text className={styles.socialText}>Continue with Apple</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className={styles.socialButton} activeOpacity={0.7} disabled={loading}>
-                                <Text className={styles.googleIcon}>G</Text>
-                                <Text className={styles.socialText}>Continue with Google</Text>
-                            </TouchableOpacity>
-                        </View>
-
                         <View className={styles.footerContainer}>
-                            <Text className={styles.footerText}>Don't have an account?</Text>
+                            <Text className={styles.footerText}>{t('login.noAccount')}</Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Register')} disabled={loading}>
-                                <Text className={styles.signupText}>Sign up</Text>
+                                <Text className={styles.signupText}>{t('login.signUpLink')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -162,11 +164,20 @@ export default function LoginScreen() {
 
             <FeedbackModal
                 visible={modalVisible}
-                title="Falha na Autenticação"
+                title={modalMessage.includes("código") ? t('login.forgotModalTitle') : t('login.modalTitle')}
                 message={modalMessage}
-                type="error"
-                confirmText="Tentar novamente"
+                type={modalMessage.includes("código") ? "success" : "error"}
+                confirmText={t('common.ok')}
                 onConfirm={() => setModalVisible(false)}
+            />
+
+            <ForgotPasswordModal
+                visible={forgotModalVisible}
+                onClose={() => setForgotModalVisible(false)}
+                onSuccess={(msg) => {
+                    setModalMessage(msg);
+                    setModalVisible(true);
+                }}
             />
         </SafeAreaView>
     );
