@@ -6,25 +6,28 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider } from './src/contexts/AuthContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+import { ProgressProvider } from './src/contexts/ProgressContext'; // <-- IMPORTAÇÃO ADICIONADA
 import Routes from './src/navigation/Routes';
 
 function AppContent() {
-    const { isDarkTheme } = useTheme();
+  const { isDarkTheme } = useTheme();
 
-    return (
-        <View className={`flex-1 ${isDarkTheme ? 'dark' : ''}`}>
-            <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
-            <Routes />
-        </View>
-    );
+  return (
+    <View className={`flex-1 ${isDarkTheme ? 'dark' : ''}`}>
+      <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
+      <Routes />
+    </View>
+  );
 }
 
 export default function App() {
-    return (
-        <AuthProvider>
-            <ThemeProvider>
-                <AppContent />
-            </ThemeProvider>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider>
+      <ProgressProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </ProgressProvider>
+    </AuthProvider>
+  );
 }
