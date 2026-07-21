@@ -8,6 +8,7 @@ import { LessonContentDTO, LessonStep } from '../types/Lesson';
 import { RootStackParamList } from '../navigation/Routes';
 import { getNoteFromStringAndFret } from '../core/MusicEngine';
 import { useAuth } from '../contexts/AuthContext';
+import { useProgress } from '../contexts/ProgressContext';
 
 type LessonScreenRouteProp = RouteProp<RootStackParamList, 'Lesson'>;
 
@@ -15,7 +16,9 @@ export function useLesson() {
     const navigation = useNavigation<any>();
     const route = useRoute<LessonScreenRouteProp>();
     const { moduleId } = route.params;
-    const { updateUserProgress, tuning } = useAuth();
+
+    const { tuning } = useAuth();
+    const { updateUserProgress } = useProgress();
 
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -61,12 +64,12 @@ export function useLesson() {
                 if (currentStep.targetShape && currentStep.targetShape.length > 0) {
                     if (selectedFrets.length === currentStep.targetShape.length) {
                         isCorrect = currentStep.targetShape.every(target =>
-                            selectedFrets.some(sel => sel.string === target.string && sel.fret === target.fret)
+                          selectedFrets.some(sel => sel.string === target.string && sel.fret === target.fret)
                         );
                     }
                 } else if (currentStep.targetNotes && currentStep.targetNotes.length > 0) {
                     const selectedNoteNames = selectedFrets.map(f =>
-                        getNoteFromStringAndFret(f.string, f.fret, tuning).toUpperCase()
+                      getNoteFromStringAndFret(f.string, f.fret, tuning).toUpperCase()
                     );
                     const targets = currentStep.targetNotes.map(n => n.toUpperCase());
 
@@ -135,8 +138,8 @@ export function useLesson() {
         setCheckResult('IDLE');
 
         const isSingleSelection = !!currentStep.targetNote ||
-            currentStep.targetShape?.length === 1 ||
-            currentStep.targetNotes?.length === 1;
+          currentStep.targetShape?.length === 1 ||
+          currentStep.targetNotes?.length === 1;
 
         setSelectedFrets(prev => {
             const exists = prev.find(p => p.string === stringNum && p.fret === fretNum);

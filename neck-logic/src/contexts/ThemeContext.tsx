@@ -10,7 +10,9 @@ interface ThemeContextData {
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
     const { colorScheme, setColorScheme } = useColorScheme();
+
     const [isDarkTheme, setIsDarkTheme] = useState(colorScheme === 'dark');
 
     useEffect(() => {

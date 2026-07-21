@@ -209,6 +209,24 @@ const resources = {
                 lessonLoadError: "Failed to load the lesson.",
                 lessonSaveError: "Could not save your progress.",
                 pathLoadError: "Could not load your path."
+            },
+            verification: {
+                title: "Check your email",
+                resetTitle: "Reset your password",
+                subtitle: "We sent a 6-digit code to ",
+                verifyAccount: "Verify Account",
+                resetPassword: "Reset Password",
+                newPassword: "New Password",
+                newPasswordPlaceholder: "Minimum 6 characters",
+                resendCode: "Resend Code",
+                resendIn: "Resend code in {{time}}s",
+                errorIncomplete: "Please enter the 6-digit code.",
+                errorPasswordMatch: "Passwords do not match.",
+                successRegisterTitle: "Account Verified",
+                successRegisterDesc: "Your account is now active. You can sign in.",
+                successResetTitle: "Password Reset",
+                successResetDesc: "Your password has been successfully updated.",
+                signIn: "Go to Sign In"
             }
         }
     },
@@ -389,21 +407,39 @@ const resources = {
                 lessonLoadError: "Falha ao carregar a aula.",
                 lessonSaveError: "Não foi possível salvar o progresso.",
                 pathLoadError: "Não foi possível carregar sua trilha."
+            },
+            verification: {
+                title: "Verifique seu e-mail",
+                resetTitle: "Redefinir sua senha",
+                subtitle: "Enviamos um código de 6 dígitos para ",
+                verifyAccount: "Verificar Conta",
+                resetPassword: "Redefinir Senha",
+                newPassword: "Nova Senha",
+                newPasswordPlaceholder: "Mínimo 6 caracteres",
+                resendCode: "Reenviar Código",
+                resendIn: "Reenviar código em {{time}}s",
+                errorIncomplete: "Por favor, digite o código de 6 dígitos.",
+                errorPasswordMatch: "As senhas não coincidem.",
+                successRegisterTitle: "Conta Verificada",
+                successRegisterDesc: "Sua conta já está ativa. Você pode fazer o login.",
+                successResetTitle: "Senha Redefinida",
+                successResetDesc: "Sua senha foi atualizada com sucesso.",
+                signIn: "Ir para o Login"
             }
         }
     }
 };
 
 i18n
-    .use(languageDetector)
-    .use(initReactI18next)
-    .init({
-        resources,
-        fallbackLng: 'en',
-        compatibilityJSON: 'v4',
-        interpolation: {
-            escapeValue: false
-        }
-    });
+  .use(languageDetector)
+  .use(initReactI18next)
+  .init({
+      resources,
+      fallbackLng: 'en',
+      compatibilityJSON: 'v4',
+      interpolation: {
+          escapeValue: false
+      }
+  });
 
 export default i18n;

@@ -6,6 +6,7 @@ import { ChevronLeft, LogOut, User as UserIcon, Mail, Save, Lock, Trash2 } from 
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useAccount } from '../../hooks/useAccount';
 import { profileSchema, passwordSchema } from '../../validations/profile';
 import { FeedbackModal } from '../../components/FeedbackModal';
 
@@ -22,7 +23,10 @@ type ModalConfig = {
 
 export default function AccountSettingsScreen() {
     const navigation = useNavigation();
-    const { user, updateAccountProfile, updatePassword, deleteAccount, signOut } = useAuth();
+
+    const { user } = useAuth();
+    const { updateAccountProfile, updatePassword, deleteAccount, signOut } = useAccount();
+
     const { t } = useTranslation();
 
     const [name, setName] = useState(user?.name || '');
@@ -173,166 +177,166 @@ export default function AccountSettingsScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
-            <View className="flex-row items-center px-6 py-4 border-b border-border/10">
-                <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
-                    <ChevronLeft size={24} color="#A1A1AA" />
-                </TouchableOpacity>
-                <Text className="text-xl font-bold text-foreground">{t('account.title')}</Text>
-            </View>
+      <SafeAreaView className="flex-1 bg-background">
+          <View className="flex-row items-center px-6 py-4 border-b border-border/10">
+              <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
+                  <ChevronLeft size={24} color="#A1A1AA" />
+              </TouchableOpacity>
+              <Text className="text-xl font-bold text-foreground">{t('account.title')}</Text>
+          </View>
 
-            <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>
-                <View className="mb-8">
-                    <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        {t('account.personalInfo')}
-                    </Text>
+          <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>
+              <View className="mb-8">
+                  <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
+                      {t('account.personalInfo')}
+                  </Text>
 
-                    <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.nameLabel')}</Text>
-                        <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
-                            <UserIcon size={20} color="#A1A1AA" />
-                            <TextInput
-                                className="flex-1 ml-3 text-foreground font-medium"
-                                value={name}
-                                onChangeText={setName}
-                                placeholder={t('account.namePlaceholder')}
-                                placeholderTextColor="#52525B"
-                                autoCapitalize="words"
-                            />
-                        </View>
-                    </View>
+                  <View className="mb-4">
+                      <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.nameLabel')}</Text>
+                      <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
+                          <UserIcon size={20} color="#A1A1AA" />
+                          <TextInput
+                            className="flex-1 ml-3 text-foreground font-medium"
+                            value={name}
+                            onChangeText={setName}
+                            placeholder={t('account.namePlaceholder')}
+                            placeholderTextColor="#52525B"
+                            autoCapitalize="words"
+                          />
+                      </View>
+                  </View>
 
-                    <View className="mb-6">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.emailLabel')}</Text>
-                        <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
-                            <Mail size={20} color="#A1A1AA" />
-                            <TextInput
-                                className="flex-1 ml-3 text-foreground font-medium"
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder={t('account.emailPlaceholder')}
-                                placeholderTextColor="#52525B"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                            />
-                        </View>
-                    </View>
+                  <View className="mb-6">
+                      <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.emailLabel')}</Text>
+                      <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
+                          <Mail size={20} color="#A1A1AA" />
+                          <TextInput
+                            className="flex-1 ml-3 text-foreground font-medium"
+                            value={email}
+                            onChangeText={setEmail}
+                            placeholder={t('account.emailPlaceholder')}
+                            placeholderTextColor="#52525B"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                          />
+                      </View>
+                  </View>
 
-                    <TouchableOpacity
-                        onPress={handleSaveProfile}
-                        disabled={isSavingProfile}
-                        activeOpacity={0.8}
-                        className={`flex-row items-center justify-center py-4 rounded-xl ${isSavingProfile ? 'bg-primary/50' : 'bg-primary'}`}
-                    >
-                        {isSavingProfile ? (
-                            <ActivityIndicator color="#121212" />
-                        ) : (
-                            <>
-                                <Save size={20} color="#121212" className="mr-2" />
-                                <Text className="text-[#121212] font-bold text-lg">{t('account.saveProfile')}</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                  <TouchableOpacity
+                    onPress={handleSaveProfile}
+                    disabled={isSavingProfile}
+                    activeOpacity={0.8}
+                    className={`flex-row items-center justify-center py-4 rounded-xl ${isSavingProfile ? 'bg-primary/50' : 'bg-primary'}`}
+                  >
+                      {isSavingProfile ? (
+                        <ActivityIndicator color="#121212" />
+                      ) : (
+                        <>
+                            <Save size={20} color="#121212" className="mr-2" />
+                            <Text className="text-[#121212] font-bold text-lg">{t('account.saveProfile')}</Text>
+                        </>
+                      )}
+                  </TouchableOpacity>
+              </View>
 
-                <View className="mb-8 border-t border-border/10 pt-8">
-                    <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        {t('account.security')}
-                    </Text>
+              <View className="mb-8 border-t border-border/10 pt-8">
+                  <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
+                      {t('account.security')}
+                  </Text>
 
-                    <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.currentPassword')}</Text>
-                        <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
-                            <Lock size={20} color="#A1A1AA" />
-                            <TextInput
-                                className="flex-1 ml-3 text-foreground font-medium"
-                                value={currentPassword}
-                                onChangeText={setCurrentPassword}
-                                placeholder="••••••••"
-                                placeholderTextColor="#52525B"
-                                secureTextEntry
-                            />
-                        </View>
-                    </View>
+                  <View className="mb-4">
+                      <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.currentPassword')}</Text>
+                      <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
+                          <Lock size={20} color="#A1A1AA" />
+                          <TextInput
+                            className="flex-1 ml-3 text-foreground font-medium"
+                            value={currentPassword}
+                            onChangeText={setCurrentPassword}
+                            placeholder="••••••••"
+                            placeholderTextColor="#52525B"
+                            secureTextEntry
+                          />
+                      </View>
+                  </View>
 
-                    <View className="mb-4">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.newPassword')}</Text>
-                        <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
-                            <Lock size={20} color="#A1A1AA" />
-                            <TextInput
-                                className="flex-1 ml-3 text-foreground font-medium"
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                placeholder={t('account.newPasswordPlaceholder')}
-                                placeholderTextColor="#52525B"
-                                secureTextEntry
-                            />
-                        </View>
-                    </View>
+                  <View className="mb-4">
+                      <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.newPassword')}</Text>
+                      <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
+                          <Lock size={20} color="#A1A1AA" />
+                          <TextInput
+                            className="flex-1 ml-3 text-foreground font-medium"
+                            value={newPassword}
+                            onChangeText={setNewPassword}
+                            placeholder={t('account.newPasswordPlaceholder')}
+                            placeholderTextColor="#52525B"
+                            secureTextEntry
+                          />
+                      </View>
+                  </View>
 
-                    <View className="mb-6">
-                        <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.confirmPassword')}</Text>
-                        <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
-                            <Lock size={20} color="#A1A1AA" />
-                            <TextInput
-                                className="flex-1 ml-3 text-foreground font-medium"
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                placeholder="••••••••"
-                                placeholderTextColor="#52525B"
-                                secureTextEntry
-                            />
-                        </View>
-                    </View>
+                  <View className="mb-6">
+                      <Text className="text-xs text-muted-foreground mb-2 ml-1">{t('account.confirmPassword')}</Text>
+                      <View className="flex-row items-center bg-card border border-border/10 rounded-xl px-4 h-14">
+                          <Lock size={20} color="#A1A1AA" />
+                          <TextInput
+                            className="flex-1 ml-3 text-foreground font-medium"
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            placeholder="••••••••"
+                            placeholderTextColor="#52525B"
+                            secureTextEntry
+                          />
+                      </View>
+                  </View>
 
-                    <TouchableOpacity
-                        onPress={handleSavePassword}
-                        disabled={isSavingPassword}
-                        activeOpacity={0.8}
-                        className={`flex-row items-center justify-center py-4 rounded-xl ${isSavingPassword ? 'bg-secondary/50' : 'bg-secondary'}`}
-                    >
-                        {isSavingPassword ? (
-                            <ActivityIndicator color="#FFFFFF" />
-                        ) : (
-                            <Text className="text-foreground font-bold text-lg">{t('account.updatePassword')}</Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                  <TouchableOpacity
+                    onPress={handleSavePassword}
+                    disabled={isSavingPassword}
+                    activeOpacity={0.8}
+                    className={`flex-row items-center justify-center py-4 rounded-xl ${isSavingPassword ? 'bg-secondary/50' : 'bg-secondary'}`}
+                  >
+                      {isSavingPassword ? (
+                        <ActivityIndicator color="#FFFFFF" />
+                      ) : (
+                        <Text className="text-foreground font-bold text-lg">{t('account.updatePassword')}</Text>
+                      )}
+                  </TouchableOpacity>
+              </View>
 
-                <View className="mb-8 border-t border-border/10 pt-8">
-                    <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
-                        {t('account.accountActions')}
-                    </Text>
-                    <TouchableOpacity
-                        onPress={handleSignOut}
-                        activeOpacity={0.8}
-                        className="flex-row items-center bg-card border border-border/10 py-4 px-4 rounded-xl mb-4"
-                    >
-                        <LogOut size={20} color="#A1A1AA" className="mr-3" />
-                        <Text className="text-foreground font-medium text-base">{t('account.signOut')}</Text>
-                    </TouchableOpacity>
-                </View>
+              <View className="mb-8 border-t border-border/10 pt-8">
+                  <Text className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">
+                      {t('account.accountActions')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleSignOut}
+                    activeOpacity={0.8}
+                    className="flex-row items-center bg-card border border-border/10 py-4 px-4 rounded-xl mb-4"
+                  >
+                      <LogOut size={20} color="#A1A1AA" className="mr-3" />
+                      <Text className="text-foreground font-medium text-base">{t('account.signOut')}</Text>
+                  </TouchableOpacity>
+              </View>
 
-                <View className="mt-2 border-t border-border/10 pt-8 mb-10">
-                    <Text className="text-sm font-semibold text-destructive mb-4 uppercase tracking-wider">
-                        {t('account.dangerZone')}
-                    </Text>
-                    <TouchableOpacity
-                        onPress={handleDeleteAccount}
-                        activeOpacity={0.8}
-                        className="flex-row items-center justify-center bg-destructive/10 border border-destructive/20 py-4 rounded-xl"
-                    >
-                        <Trash2 size={20} color="#EF4444" className="mr-2" />
-                        <Text className="text-destructive font-bold text-lg">{t('account.deleteAccount')}</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+              <View className="mt-2 border-t border-border/10 pt-8 mb-10">
+                  <Text className="text-sm font-semibold text-destructive mb-4 uppercase tracking-wider">
+                      {t('account.dangerZone')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleDeleteAccount}
+                    activeOpacity={0.8}
+                    className="flex-row items-center justify-center bg-destructive/10 border border-destructive/20 py-4 rounded-xl"
+                  >
+                      <Trash2 size={20} color="#EF4444" className="mr-2" />
+                      <Text className="text-destructive font-bold text-lg">{t('account.deleteAccount')}</Text>
+                  </TouchableOpacity>
+              </View>
+          </ScrollView>
 
-            <FeedbackModal
-                {...modalConfig}
-                onConfirm={modalConfig.onConfirm}
-                onCancel={modalConfig.onCancel}
-            />
-        </SafeAreaView>
+          <FeedbackModal
+            {...modalConfig}
+            onConfirm={modalConfig.onConfirm}
+            onCancel={modalConfig.onCancel}
+          />
+      </SafeAreaView>
     );
 }
