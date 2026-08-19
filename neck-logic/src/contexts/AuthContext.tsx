@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { api } from '../services/api';
 import { StorageService, StorageKeys } from '../services/storage';
+import { TokenStorage } from '../services/secureTokenStorage';
 import { User } from '../types/User';
 
 interface AuthContextData {
@@ -23,8 +24,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         async function loadStorageData() {
-            const token = await StorageService.getItem(StorageKeys.TOKEN);
-            const storedUser = await StorageService.getItem('userData');
+            const token = await TokenStorage.getToken();
+            const storedUser = await StorageService.getItem(StorageKeys.USER);
 
             if (token) {
                 api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -40,9 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     async function setAuthState(token: string, userData?: User) {
-        await StorageService.setItem(StorageKeys.TOKEN, token);
+        await TokenStorage.setToken(token);
         if (userData) {
-            await StorageService.setItem('userData', JSON.stringify(userData));
+            await StorageService.setItem(StorageKeys.USER, JSON.stringify(userData));
             setUser(userData);
         }
         api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -50,14 +51,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     async function clearAuthState() {
-        await StorageService.multiRemove([...Object.values(StorageKeys), 'userData']);
+        await TokenStorage.removeToken();
+        await StorageService.multiRemove(Object.values(StorageKeys));
         delete api.defaults.headers.Authorization;
         setSigned(false);
         setUser(null);
     }
 
     async function updateUserContext(userData: User) {
-        await StorageService.setItem('userData', JSON.stringify(userData));
+        await StorageService.setItem(StorageKeys.USER, JSON.stringify(userData));
         setUser(userData);
     }
 
