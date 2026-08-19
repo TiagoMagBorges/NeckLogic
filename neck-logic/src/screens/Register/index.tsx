@@ -41,8 +41,7 @@ export default function RegisterScreen() {
             navigation.navigate('Verification', { email });
         } catch (error: any) {
             const status = error.response?.status;
-            if (status === 409) setModalMessage(t('register.errorConflict'));
-            else if (status === 400) setModalMessage(t('register.errorInvalid'));
+            if (status === 400) setModalMessage(t('register.errorInvalid'));
             else setModalMessage(t('register.errorGeneric'));
 
             setModalVisible(true);

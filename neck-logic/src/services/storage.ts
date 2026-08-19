@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const StorageKeys = {
-  TOKEN: '@NeckLogic:token',
   USER: '@NeckLogic:user',
   ONBOARDING: '@NeckLogic:onboarding',
   XP: '@NeckLogic:xp',
