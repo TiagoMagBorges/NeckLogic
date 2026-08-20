@@ -16,6 +16,7 @@ import OnboardingScreen from '../screens/Onboarding';
 import LessonFeedbackScreen from '../screens/LessonFeedback';
 import AccountSettingsScreen from '../screens/AccountSettings';
 import GuitarTuningScreen from '../screens/GuitarTuning';
+import HarmonicWheelScreen from '../screens/HarmonicWheel';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -26,6 +27,7 @@ export type RootStackParamList = {
     MainTabs: undefined;
     AccountSettings: undefined;
     GuitarTuning: undefined;
+    HarmonicWheel: undefined;
     Lesson: { moduleId: number; title: string };
     LessonFeedback: {
         xpGained: number;
@@ -63,6 +65,7 @@ export default function Routes() {
                       <Stack.Screen name="MainTabs" component={MainTabs} />
                       <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
                       <Stack.Screen name="GuitarTuning" component={GuitarTuningScreen} />
+                      <Stack.Screen name="HarmonicWheel" component={HarmonicWheelScreen} />
                       <Stack.Screen name="Lesson" component={LessonScreen} />
                       <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                   </>

@@ -4,9 +4,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
-import { styles, getProgressStyle } from './styles';
+import { styles, getProgressStyle, getChoiceButtonStyle } from './styles';
 import { Fretboard, FretboardNote } from '../../components/Fretboard';
+import { CircleOfFifthsWheel } from '../../components/CircleOfFifthsWheel';
+import { HarmonicFieldWheel } from '../../components/HarmonicFieldWheel';
+import { TabDisplay } from '../../components/TabDisplay';
+import { StaffDisplay } from '../../components/StaffDisplay';
 import { getNoteFromStringAndFret, getFretboardPositionsForNotes } from '../../core/MusicEngine';
+import {
+    isMultipleChoiceStep,
+    isCircleOfFifthsStep,
+    isHarmonicFieldStep,
+    isTabReadingStep,
+    isStaffReadingStep,
+    usesChoiceInput
+} from '../../core/exerciseValidators';
 import { useLesson } from '../../hooks/useLesson';
 
 export default function LessonScreen() {
@@ -17,9 +29,11 @@ export default function LessonScreen() {
         currentStep,
         currentStepIndex,
         selectedFrets,
+        selectedChoice,
         checkResult,
         handleAction,
         handleFretPress,
+        handleChoicePress,
         goBack,
         tuning
     } = useLesson();
@@ -38,9 +52,9 @@ export default function LessonScreen() {
                 notes = [
                     ...notes,
                     ...getFretboardPositionsForNotes(
-                        config.highlightNotes,
-                        config.tuning || tuning,
-                        config.frets || 22
+                      config.highlightNotes,
+                      config.tuning || tuning,
+                      config.frets || 22
                     )
                 ];
             }
@@ -73,96 +87,164 @@ export default function LessonScreen() {
 
     if (loading || !currentStep) {
         return (
-            <View className="flex-1 bg-background justify-center items-center">
-                <ActivityIndicator size="large" color="#00D9FF" />
-            </View>
+          <View className="flex-1 bg-background justify-center items-center">
+              <ActivityIndicator size="large" color="#00D9FF" />
+          </View>
         );
     }
+
+    const isDrill = currentStep.type === 'DRILL';
 
     let buttonText = currentStepIndex === steps.length - 1 ? t('lesson.complete') : t('lesson.next');
     let isButtonDisabled = false;
 
-    if (currentStep.type === 'DRILL') {
+    if (isDrill) {
         if (checkResult === 'IDLE') {
             buttonText = t('lesson.check');
-            isButtonDisabled = selectedFrets.length === 0;
+            isButtonDisabled = usesChoiceInput(currentStep) ? !selectedChoice : selectedFrets.length === 0;
         } else if (checkResult === 'INCORRECT') {
             buttonText = t('lesson.tryAgain');
         }
     }
 
-    const showFretboard = currentStep.type === 'DRILL' || !!currentStep.fretboardConfig;
+    const showFretboard = (isDrill && !usesChoiceInput(currentStep)) || !!currentStep.fretboardConfig;
     const displayFrets = Math.max(12, currentStep.fretboardConfig?.frets ?? 22);
 
     return (
-        <SafeAreaView className={styles.safeArea}>
-            <View className={styles.header}>
-                <TouchableOpacity onPress={goBack} className={styles.closeButton}>
-                    <X size={24} color="#A1A1AA" />
-                </TouchableOpacity>
+      <SafeAreaView className={styles.safeArea}>
+          <View className={styles.header}>
+              <TouchableOpacity onPress={goBack} className={styles.closeButton}>
+                  <X size={24} color="#A1A1AA" />
+              </TouchableOpacity>
 
-                <View className={styles.progressBarContainer}>
-                    <View
-                        className={styles.progressBarFill}
-                        style={getProgressStyle(currentStepIndex, steps.length)}
+              <View className={styles.progressBarContainer}>
+                  <View
+                    className={styles.progressBarFill}
+                    style={getProgressStyle(currentStepIndex, steps.length)}
+                  />
+              </View>
+
+              <View style={{ width: 24 }} />
+          </View>
+
+          <View className={styles.contentContainer}>
+              <Text className={styles.typeTag}>{currentStep.type.replace('_', ' ')}</Text>
+
+              {currentStep.imageUrl && (
+                <View className={styles.imageContainer}>
+                    <Text className={styles.imagePlaceholderText}>{t('lesson.image')} {currentStep.imageUrl}</Text>
+                </View>
+              )}
+
+              <Text className={styles.title}>{currentStep.title}</Text>
+
+              {currentStep.text && (
+                <Text className={styles.bodyText}>{currentStep.text}</Text>
+              )}
+
+              {showFretboard && (
+                <View className="w-full mt-4">
+                    {isTabReadingStep(currentStep) && (
+                      <View className="mb-4">
+                          <TabDisplay notes={currentStep.targetSequence} />
+                      </View>
+                    )}
+
+                    {isStaffReadingStep(currentStep) && (
+                      <View className="mb-4">
+                          <StaffDisplay
+                            notes={currentStep.staffNotes}
+                            clef={currentStep.clef}
+                            beatsPerMeasure={currentStep.beatsPerMeasure}
+                          />
+                      </View>
+                    )}
+
+                    {currentStep.question && (
+                      <Text className="text-primary text-center text-xl font-bold mb-6">
+                          {currentStep.question}
+                      </Text>
+                    )}
+
+                    <View style={{ marginHorizontal: -24 }}>
+                        <Fretboard
+                          key={`step-${currentStepIndex}`}
+                          frets={displayFrets}
+                          notes={notesToRender}
+                          onFretPress={isDrill && !usesChoiceInput(currentStep) ? handleFretPress : undefined}
+                          autoScroll={currentStep.type === 'THEORY'}
+                        />
+                    </View>
+                </View>
+              )}
+
+              {isCircleOfFifthsStep(currentStep) && (
+                <View className="w-full mt-4 items-center">
+                    {currentStep.question && (
+                      <Text className="text-primary text-center text-xl font-bold mb-6">
+                          {currentStep.question}
+                      </Text>
+                    )}
+                    <CircleOfFifthsWheel
+                      selectedKey={selectedChoice}
+                      onSelectKey={handleChoicePress}
+                      checkResult={checkResult}
+                      disabled={checkResult === 'CORRECT'}
                     />
                 </View>
+              )}
 
-                <View style={{ width: 24 }} />
-            </View>
-
-            <View className={styles.contentContainer}>
-                <Text className={styles.typeTag}>{currentStep.type.replace('_', ' ')}</Text>
-
-                {currentStep.imageUrl && (
-                    <View className={styles.imageContainer}>
-                        <Text className={styles.imagePlaceholderText}>{t('lesson.image')} {currentStep.imageUrl}</Text>
-                    </View>
-                )}
-
-                <Text className={styles.title}>{currentStep.title}</Text>
-
-                {currentStep.text && (
-                    <Text className={styles.bodyText}>{currentStep.text}</Text>
-                )}
-
-                {showFretboard && (
-                    <View className="w-full mt-4">
-                        {currentStep.question && (
-                            <Text className="text-primary text-center text-xl font-bold mb-6">
-                                {currentStep.question}
-                            </Text>
-                        )}
-
-                        <View style={{ marginHorizontal: -24 }}>
-                            <Fretboard
-                                key={`step-${currentStepIndex}`}
-                                frets={displayFrets}
-                                notes={notesToRender}
-                                onFretPress={currentStep.type === 'DRILL' ? handleFretPress : undefined}
-                                autoScroll={currentStep.type === 'THEORY'}
-                            />
-                        </View>
-                    </View>
-                )}
-            </View>
-
-            <View className={styles.footer}>
-                <TouchableOpacity
-                    className={`${styles.nextButton} ${isButtonDisabled || isSaving ? 'opacity-50' : 'opacity-100'}`}
-                    onPress={handleAction}
-                    activeOpacity={0.8}
-                    disabled={isButtonDisabled || isSaving}
-                >
-                    {isSaving ? (
-                        <ActivityIndicator color="#121212" />
-                    ) : (
-                        <Text className={styles.nextButtonText}>
-                            {buttonText}
-                        </Text>
+              {isHarmonicFieldStep(currentStep) && (
+                <View className="w-full mt-4 items-center">
+                    {currentStep.question && (
+                      <Text className="text-primary text-center text-xl font-bold mb-6">
+                          {currentStep.question}
+                      </Text>
                     )}
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+                    <HarmonicFieldWheel
+                      rootKey={currentStep.key}
+                      mode={currentStep.mode}
+                      showFunctionColors={false}
+                      selectedDegree={selectedChoice}
+                      onSelectDegree={handleChoicePress}
+                      checkResult={checkResult}
+                      disabled={checkResult === 'CORRECT'}
+                    />
+                </View>
+              )}
+
+              {isMultipleChoiceStep(currentStep) && (
+                <View className={styles.choiceContainer}>
+                    {currentStep.options.map(option => (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() => handleChoicePress(option)}
+                        disabled={checkResult === 'CORRECT'}
+                        className={getChoiceButtonStyle(option, selectedChoice, checkResult)}
+                      >
+                          <Text className={styles.choiceButtonText}>{option}</Text>
+                      </TouchableOpacity>
+                    ))}
+                </View>
+              )}
+          </View>
+
+          <View className={styles.footer}>
+              <TouchableOpacity
+                className={`${styles.nextButton} ${isButtonDisabled || isSaving ? 'opacity-50' : 'opacity-100'}`}
+                onPress={handleAction}
+                activeOpacity={0.8}
+                disabled={isButtonDisabled || isSaving}
+              >
+                  {isSaving ? (
+                    <ActivityIndicator color="#121212" />
+                  ) : (
+                    <Text className={styles.nextButtonText}>
+                        {buttonText}
+                    </Text>
+                  )}
+              </TouchableOpacity>
+          </View>
+      </SafeAreaView>
     );
 }

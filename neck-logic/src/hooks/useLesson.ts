@@ -4,9 +4,9 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import i18n from '../i18n';
 
 import { api } from '../services/api';
-import { LessonContentDTO, LessonStep } from '../types/Lesson';
+import { LessonContentDTO, LessonStep, FretPosition } from '../types/Lesson';
 import { RootStackParamList } from '../navigation/Routes';
-import { getNoteFromStringAndFret } from '../core/MusicEngine';
+import { validateDrillStep, isShapeMatchStep, usesChoiceInput } from '../core/exerciseValidators';
 import { useAuth } from '../contexts/AuthContext';
 import { useProgress } from '../contexts/ProgressContext';
 
@@ -25,7 +25,8 @@ export function useLesson() {
     const [steps, setSteps] = useState<LessonStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
-    const [selectedFrets, setSelectedFrets] = useState<{ string: number; fret: number }[]>([]);
+    const [selectedFrets, setSelectedFrets] = useState<FretPosition[]>([]);
+    const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
     const [checkResult, setCheckResult] = useState<'IDLE' | 'CORRECT' | 'INCORRECT'>('IDLE');
     const [mistakesCount, setMistakesCount] = useState(0);
 
@@ -57,31 +58,14 @@ export function useLesson() {
 
         if (currentStep.type === 'DRILL') {
             if (checkResult === 'IDLE') {
-                if (selectedFrets.length === 0) return;
-
                 let isCorrect = false;
 
-                if (currentStep.targetShape && currentStep.targetShape.length > 0) {
-                    if (selectedFrets.length === currentStep.targetShape.length) {
-                        isCorrect = currentStep.targetShape.every(target =>
-                          selectedFrets.some(sel => sel.string === target.string && sel.fret === target.fret)
-                        );
-                    }
-                } else if (currentStep.targetNotes && currentStep.targetNotes.length > 0) {
-                    const selectedNoteNames = selectedFrets.map(f =>
-                      getNoteFromStringAndFret(f.string, f.fret, tuning).toUpperCase()
-                    );
-                    const targets = currentStep.targetNotes.map(n => n.toUpperCase());
-
-                    const allSelectedValid = selectedNoteNames.every(n => targets.includes(n));
-                    const allTargetsFound = targets.every(t => selectedNoteNames.includes(t));
-
-                    isCorrect = allSelectedValid && allTargetsFound;
-                } else if (currentStep.targetNote) {
-                    if (selectedFrets.length === 1) {
-                        const clickedNoteName = getNoteFromStringAndFret(selectedFrets[0].string, selectedFrets[0].fret, tuning);
-                        isCorrect = clickedNoteName.toUpperCase() === currentStep.targetNote.toUpperCase();
-                    }
+                if (usesChoiceInput(currentStep)) {
+                    if (!selectedChoice) return;
+                    isCorrect = validateDrillStep(currentStep, { kind: 'CHOICE', value: selectedChoice }, tuning);
+                } else {
+                    if (selectedFrets.length === 0) return;
+                    isCorrect = validateDrillStep(currentStep, { kind: 'FRETS', frets: selectedFrets }, tuning);
                 }
 
                 if (!isCorrect) {
@@ -94,6 +78,7 @@ export function useLesson() {
 
             if (checkResult === 'INCORRECT') {
                 setSelectedFrets([]);
+                setSelectedChoice(null);
                 setCheckResult('IDLE');
                 return;
             }
@@ -102,6 +87,7 @@ export function useLesson() {
         if (currentStepIndex < steps.length - 1) {
             setCurrentStepIndex(currentStepIndex + 1);
             setSelectedFrets([]);
+            setSelectedChoice(null);
             setCheckResult('IDLE');
         } else {
             try {
@@ -134,12 +120,15 @@ export function useLesson() {
         const currentStep = steps[currentStepIndex];
 
         if (currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
+        if (usesChoiceInput(currentStep)) return;
 
         setCheckResult('IDLE');
 
-        const isSingleSelection = !!currentStep.targetNote ||
+        const isSingleSelection = isShapeMatchStep(currentStep) && (
+          !!currentStep.targetNote ||
           currentStep.targetShape?.length === 1 ||
-          currentStep.targetNotes?.length === 1;
+          currentStep.targetNotes?.length === 1
+        );
 
         setSelectedFrets(prev => {
             const exists = prev.find(p => p.string === stringNum && p.fret === fretNum);
@@ -156,6 +145,14 @@ export function useLesson() {
         });
     }
 
+    function handleChoicePress(option: string) {
+        const currentStep = steps[currentStepIndex];
+        if (currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
+
+        setCheckResult('IDLE');
+        setSelectedChoice(option);
+    }
+
     function goBack() {
         navigation.goBack();
     }
@@ -167,9 +164,11 @@ export function useLesson() {
         currentStep: steps[currentStepIndex],
         currentStepIndex,
         selectedFrets,
+        selectedChoice,
         checkResult,
         handleAction,
         handleFretPress,
+        handleChoicePress,
         goBack,
         tuning
     };

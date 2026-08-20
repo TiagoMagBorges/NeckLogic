@@ -20,9 +20,31 @@ export const styles = {
     footer: "p-6 pb-12",
     nextButton: "w-full bg-primary py-4 rounded-xl items-center shadow-lg",
     nextButtonText: "text-background font-bold text-lg uppercase tracking-wide",
+
+    choiceContainer: "w-full mt-6 gap-3",
+    choiceButtonText: "text-foreground text-base font-semibold text-center",
 };
 
 export const getProgressStyle = (current: number, total: number): { width: DimensionValue } => {
     const percentage = total > 0 ? ((current + 1) / total) * 100 : 0;
     return { width: `${percentage}%` as DimensionValue };
+};
+
+export const getChoiceButtonStyle = (
+  option: string,
+  selectedChoice: string | null,
+  checkResult: 'IDLE' | 'CORRECT' | 'INCORRECT'
+): string => {
+    const base = "w-full py-4 rounded-xl border items-center";
+    const isSelected = option === selectedChoice;
+
+    if (checkResult !== 'IDLE' && isSelected) {
+        return checkResult === 'CORRECT'
+          ? `${base} bg-[#10B981]/20 border-[#10B981]`
+          : `${base} bg-destructive/20 border-destructive`;
+    }
+
+    return isSelected
+      ? `${base} bg-primary/20 border-primary`
+      : `${base} bg-card border-border/20`;
 };
