@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { styles } from './styles';
@@ -21,7 +20,6 @@ export default function LabScreen() {
     const { tuning } = useAuth();
     const { width } = useWindowDimensions();
     const { t } = useTranslation();
-    const navigation = useNavigation<any>();
 
     const displayFrets = width > 768 ? 24 : 15;
 
@@ -103,14 +101,6 @@ export default function LabScreen() {
                   <Text className={styles.title}>{t('lab.title')}</Text>
                   <Text className={styles.subtitle}>{t('lab.subtitle')}</Text>
               </View>
-
-              <TouchableOpacity
-                onPress={() => navigation.navigate('HarmonicWheel')}
-                activeOpacity={0.8}
-                className={`${styles.typeButton} mb-8`}
-              >
-                  <Text className={styles.typeText}>{t('lab.openHarmonicWheel')}</Text>
-              </TouchableOpacity>
 
               <View className={styles.activeScaleContainer}>
                   <Text className={styles.activeScaleTitle}>{rootNote} {displayScaleName}</Text>

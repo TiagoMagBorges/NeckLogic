@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useProgress } from '../contexts/ProgressContext';
-import { MainTabs } from './MainTabs';
+import { MainTabs, MainTabParamList } from './MainTabs';
 
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
@@ -16,7 +16,7 @@ import OnboardingScreen from '../screens/Onboarding';
 import LessonFeedbackScreen from '../screens/LessonFeedback';
 import AccountSettingsScreen from '../screens/AccountSettings';
 import GuitarTuningScreen from '../screens/GuitarTuning';
-import HarmonicWheelScreen from '../screens/HarmonicWheel';
+import TrackSelectionScreen from '../screens/TrackSelection';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -24,10 +24,10 @@ export type RootStackParamList = {
     Verification: { email: string };
     ResetPassword: { email: string };
     Onboarding: undefined;
-    MainTabs: undefined;
+    MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
     AccountSettings: undefined;
     GuitarTuning: undefined;
-    HarmonicWheel: undefined;
+    TrackSelection: undefined;
     Lesson: { moduleId: number; title: string };
     LessonFeedback: {
         xpGained: number;
@@ -65,7 +65,7 @@ export default function Routes() {
                       <Stack.Screen name="MainTabs" component={MainTabs} />
                       <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
                       <Stack.Screen name="GuitarTuning" component={GuitarTuningScreen} />
-                      <Stack.Screen name="HarmonicWheel" component={HarmonicWheelScreen} />
+                      <Stack.Screen name="TrackSelection" component={TrackSelectionScreen} />
                       <Stack.Screen name="Lesson" component={LessonScreen} />
                       <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                   </>
