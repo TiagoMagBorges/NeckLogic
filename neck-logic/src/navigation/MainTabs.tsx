@@ -7,7 +7,7 @@ import ProfileScreen from '../screens/Profile';
 import { BottomNavigation } from '../components/BottomNavigation';
 
 export type MainTabParamList = {
-    LogicPath: undefined;
+    LogicPath: { trackId?: number; trackTitle?: string } | undefined;
     Lab: undefined;
     Profile: undefined;
 };

@@ -12,6 +12,7 @@ interface AuthContextData {
     setAuthState: (token: string, userData?: User) => Promise<void>;
     clearAuthState: () => Promise<void>;
     updateUserContext: (userData: User) => Promise<void>;
+    updateTuning: (newTuning: string[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -26,6 +27,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         async function loadStorageData() {
             const token = await TokenStorage.getToken();
             const storedUser = await StorageService.getItem(StorageKeys.USER);
+            const storedTuning = await StorageService.getItem(StorageKeys.TUNING);
+
+            if (storedTuning) {
+                setTuning(JSON.parse(storedTuning));
+            }
 
             if (token) {
                 api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -63,6 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(userData);
     }
 
+    async function updateTuning(newTuning: string[]) {
+        await StorageService.setItem(StorageKeys.TUNING, JSON.stringify(newTuning));
+        setTuning(newTuning);
+    }
+
     return (
       <AuthContext.Provider value={{
           signed,
@@ -71,7 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           tuning,
           setAuthState,
           clearAuthState,
-          updateUserContext
+          updateUserContext,
+          updateTuning
       }}>
           {children}
       </AuthContext.Provider>

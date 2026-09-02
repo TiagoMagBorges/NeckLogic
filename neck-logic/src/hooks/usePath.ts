@@ -6,14 +6,15 @@ import i18n from '../i18n';
 import { api } from '../services/api';
 import { ModuleDTO } from '../types/Module';
 
-export function usePath() {
+export function usePath(trackId?: number) {
     const [modules, setModules] = useState<ModuleDTO[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchPath = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await api.get<ModuleDTO[]>('/modules');
+            const url = trackId ? `/tracks/${trackId}/path` : '/modules';
+            const response = await api.get<ModuleDTO[]>(url);
             setModules(response.data);
         } catch (error) {
             console.error(error);
@@ -21,12 +22,12 @@ export function usePath() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [trackId]);
 
     useFocusEffect(
-        useCallback(() => {
-            fetchPath();
-        }, [fetchPath])
+      useCallback(() => {
+          fetchPath();
+      }, [fetchPath])
     );
 
     return {

@@ -9,7 +9,8 @@ import {
     CHROMATIC_SCALE,
     SCALES,
     INTERVAL_LABELS,
-    getFretboardPositionsForNotes
+    getFretboardPositionsForNotes,
+    Note
 } from '../../core/MusicEngine';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -22,10 +23,10 @@ export default function LabScreen() {
 
     const displayFrets = width > 768 ? 24 : 15;
 
-    const [rootNote, setRootNote] = useState('C');
+    const [rootNote, setRootNote] = useState<Note>('C');
     const [scaleMode, setScaleMode] = useState<ScaleMode>('major');
 
-    const [customNotes, setCustomNotes] = useState<string[]>(['C', 'E', 'G']);
+    const [customNotes, setCustomNotes] = useState<Note[]>(['C', 'E', 'G']);
     const [customIntervals, setCustomIntervals] = useState<number[]>([0, 4, 7]);
 
     const activeNotes = useMemo(() => {
@@ -69,10 +70,10 @@ export default function LabScreen() {
         return getFretboardPositionsForNotes(activeNotes, tuning, displayFrets, '#00D9FF', rootNote, '#A855F7');
     }, [activeNotes, tuning, rootNote, displayFrets]);
 
-    const toggleCustomNote = (note: string) => {
+    const toggleCustomNote = (note: Note) => {
         if (note === rootNote) return;
         setCustomNotes(prev =>
-            prev.includes(note) ? prev.filter(n => n !== note) : [...prev, note]
+          prev.includes(note) ? prev.filter(n => n !== note) : [...prev, note]
         );
     };
 
@@ -80,8 +81,8 @@ export default function LabScreen() {
         if (interval === 0) return;
         setCustomIntervals(prev => {
             const newIntervals = prev.includes(interval)
-                ? prev.filter(i => i !== interval)
-                : [...prev, interval];
+              ? prev.filter(i => i !== interval)
+              : [...prev, interval];
             return newIntervals.sort((a, b) => a - b);
         });
     };
@@ -93,168 +94,168 @@ export default function LabScreen() {
     }, [scaleMode, t]);
 
     return (
-        <SafeAreaView className={styles.safeArea}>
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <SafeAreaView className={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                <View className={styles.header}>
-                    <Text className={styles.title}>{t('lab.title')}</Text>
-                    <Text className={styles.subtitle}>{t('lab.subtitle')}</Text>
-                </View>
+              <View className={styles.header}>
+                  <Text className={styles.title}>{t('lab.title')}</Text>
+                  <Text className={styles.subtitle}>{t('lab.subtitle')}</Text>
+              </View>
 
-                <View className={styles.activeScaleContainer}>
-                    <Text className={styles.activeScaleTitle}>{rootNote} {displayScaleName}</Text>
-                    <Text className={styles.activeScaleFormula}>{t('lab.formula')} {activeFormula}</Text>
-                    <View className={styles.activeScaleNotesRow}>
-                        {activeNotes.map((note, index) => {
-                            const isRoot = note === rootNote;
-                            const isLast = index === activeNotes.length - 1;
-                            return (
-                                <Text key={`note-text-${index}`}>
-                                    <Text className={isRoot ? styles.textNoteRoot : styles.textNoteNormal}>
-                                        {note}
-                                    </Text>
-                                    {!isLast && <Text className={styles.textNoteSeparator}>  •  </Text>}
+              <View className={styles.activeScaleContainer}>
+                  <Text className={styles.activeScaleTitle}>{rootNote} {displayScaleName}</Text>
+                  <Text className={styles.activeScaleFormula}>{t('lab.formula')} {activeFormula}</Text>
+                  <View className={styles.activeScaleNotesRow}>
+                      {activeNotes.map((note, index) => {
+                          const isRoot = note === rootNote;
+                          const isLast = index === activeNotes.length - 1;
+                          return (
+                            <Text key={`note-text-${index}`}>
+                                <Text className={isRoot ? styles.textNoteRoot : styles.textNoteNormal}>
+                                    {note}
                                 </Text>
+                                {!isLast && <Text className={styles.textNoteSeparator}>  •  </Text>}
+                            </Text>
+                          );
+                      })}
+                  </View>
+              </View>
+
+              <View className={styles.fretboardContainer}>
+                  <View className={styles.fretboardHeader}>
+                      <Text className={styles.fretboardTitle}>{t('lab.mapping')}</Text>
+                  </View>
+                  <Fretboard
+                    frets={displayFrets}
+                    notes={fretboardPositions}
+                    autoScroll={false}
+                  />
+              </View>
+
+              <View className={`${styles.statsRow} mb-8`}>
+                  <View className={styles.statBox}>
+                      <Text className={styles.statLabel}>{t('lab.notes')}</Text>
+                      <Text className={styles.statValueBlue}>{activeNotes.length}</Text>
+                  </View>
+                  <View className={styles.statBox}>
+                      <Text className={styles.statLabel}>{t('lab.root')}</Text>
+                      <Text className={styles.statValuePurple}>{rootNote}</Text>
+                  </View>
+                  <View className={styles.statBox}>
+                      <Text className={styles.statLabel}>{t('lab.type')}</Text>
+                      <Text className={styles.statValueGreen} numberOfLines={1} adjustsFontSizeToFit>
+                          {displayScaleName.split(' ')[0]}
+                      </Text>
+                  </View>
+              </View>
+
+              <View className={styles.card}>
+                  <Text className={styles.cardTitle}>{t('lab.rootSelection')}</Text>
+                  <View className={styles.gridList}>
+                      {CHROMATIC_SCALE.map((note) => {
+                          const isSelected = note === rootNote;
+                          return (
+                            <TouchableOpacity
+                              key={`root-${note}`}
+                              onPress={() => setRootNote(note)}
+                              activeOpacity={0.7}
+                              className={`${styles.pillButton} ${isSelected ? styles.pillButtonRoot : ''}`}
+                            >
+                                <Text className={`${styles.pillText} ${isSelected ? styles.pillTextRoot : ''}`}>
+                                    {note}
+                                </Text>
+                            </TouchableOpacity>
+                          );
+                      })}
+                  </View>
+              </View>
+
+              <View className={styles.card}>
+                  <Text className={styles.cardTitle}>{t('lab.shapeSelection')}</Text>
+
+                  {Object.entries(SCALES).map(([key, scale]) => (
+                    <TouchableOpacity
+                      key={`scale-${key}`}
+                      onPress={() => setScaleMode(key as ScaleMode)}
+                      activeOpacity={0.8}
+                      className={`${styles.typeButton} ${scaleMode === key ? styles.typeButtonActive : ''}`}
+                    >
+                        <Text className={`${styles.typeText} ${scaleMode === key ? styles.typeTextActive : ''}`}>
+                            {scale.name}
+                        </Text>
+                    </TouchableOpacity>
+                  ))}
+
+                  <TouchableOpacity
+                    onPress={() => setScaleMode('custom_intervals')}
+                    activeOpacity={0.8}
+                    className={`${styles.typeButton} ${scaleMode === 'custom_intervals' ? styles.typeButtonActive : 'mt-4'}`}
+                  >
+                      <Text className={`${styles.typeText} ${scaleMode === 'custom_intervals' ? styles.typeTextActive : ''}`}>
+                          {t('lab.buildIntervals')}
+                      </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => setScaleMode('custom_notes')}
+                    activeOpacity={0.8}
+                    className={`${styles.typeButton} ${scaleMode === 'custom_notes' ? styles.typeButtonActive : ''}`}
+                  >
+                      <Text className={`${styles.typeText} ${scaleMode === 'custom_notes' ? styles.typeTextActive : ''}`}>
+                          {t('lab.buildNotes')}
+                      </Text>
+                  </TouchableOpacity>
+              </View>
+
+              {scaleMode === 'custom_intervals' && (
+                <View className={styles.card}>
+                    <Text className={styles.cardTitle}>{t('lab.selectIntervals')}</Text>
+                    <View className={styles.gridList}>
+                        {INTERVAL_LABELS.map((label, index) => {
+                            const isRoot = index === 0;
+                            const isActive = customIntervals.includes(index);
+                            return (
+                              <TouchableOpacity
+                                key={`interval-${index}`}
+                                onPress={() => toggleCustomInterval(index)}
+                                activeOpacity={0.7}
+                                className={`${styles.pillButton} ${isActive ? (isRoot ? styles.pillButtonRoot : styles.pillButtonActive) : ''}`}
+                              >
+                                  <Text className={`${styles.pillText} ${isActive ? (isRoot ? styles.pillTextRoot : styles.pillTextActive) : ''}`}>
+                                      {label}
+                                  </Text>
+                              </TouchableOpacity>
                             );
                         })}
                     </View>
                 </View>
+              )}
 
-                <View className={styles.fretboardContainer}>
-                    <View className={styles.fretboardHeader}>
-                        <Text className={styles.fretboardTitle}>{t('lab.mapping')}</Text>
-                    </View>
-                    <Fretboard
-                        frets={displayFrets}
-                        notes={fretboardPositions}
-                        autoScroll={false}
-                    />
-                </View>
-
-                <View className={`${styles.statsRow} mb-8`}>
-                    <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>{t('lab.notes')}</Text>
-                        <Text className={styles.statValueBlue}>{activeNotes.length}</Text>
-                    </View>
-                    <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>{t('lab.root')}</Text>
-                        <Text className={styles.statValuePurple}>{rootNote}</Text>
-                    </View>
-                    <View className={styles.statBox}>
-                        <Text className={styles.statLabel}>{t('lab.type')}</Text>
-                        <Text className={styles.statValueGreen} numberOfLines={1} adjustsFontSizeToFit>
-                            {displayScaleName.split(' ')[0]}
-                        </Text>
-                    </View>
-                </View>
-
+              {scaleMode === 'custom_notes' && (
                 <View className={styles.card}>
-                    <Text className={styles.cardTitle}>{t('lab.rootSelection')}</Text>
+                    <Text className={styles.cardTitle}>{t('lab.selectNotes')}</Text>
                     <View className={styles.gridList}>
                         {CHROMATIC_SCALE.map((note) => {
-                            const isSelected = note === rootNote;
+                            const isRoot = note === rootNote;
+                            const isActive = customNotes.includes(note) || isRoot;
                             return (
-                                <TouchableOpacity
-                                    key={`root-${note}`}
-                                    onPress={() => setRootNote(note)}
-                                    activeOpacity={0.7}
-                                    className={`${styles.pillButton} ${isSelected ? styles.pillButtonRoot : ''}`}
-                                >
-                                    <Text className={`${styles.pillText} ${isSelected ? styles.pillTextRoot : ''}`}>
-                                        {note}
-                                    </Text>
-                                </TouchableOpacity>
+                              <TouchableOpacity
+                                key={`custom-note-${note}`}
+                                onPress={() => toggleCustomNote(note)}
+                                activeOpacity={0.7}
+                                className={`${styles.pillButton} ${isActive ? (isRoot ? styles.pillButtonRoot : styles.pillButtonActive) : ''}`}
+                              >
+                                  <Text className={`${styles.pillText} ${isActive ? (isRoot ? styles.pillTextRoot : styles.pillTextActive) : ''}`}>
+                                      {note}
+                                  </Text>
+                              </TouchableOpacity>
                             );
                         })}
                     </View>
                 </View>
+              )}
 
-                <View className={styles.card}>
-                    <Text className={styles.cardTitle}>{t('lab.shapeSelection')}</Text>
-
-                    {Object.entries(SCALES).map(([key, scale]) => (
-                        <TouchableOpacity
-                            key={`scale-${key}`}
-                            onPress={() => setScaleMode(key as ScaleMode)}
-                            activeOpacity={0.8}
-                            className={`${styles.typeButton} ${scaleMode === key ? styles.typeButtonActive : ''}`}
-                        >
-                            <Text className={`${styles.typeText} ${scaleMode === key ? styles.typeTextActive : ''}`}>
-                                {scale.name}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-
-                    <TouchableOpacity
-                        onPress={() => setScaleMode('custom_intervals')}
-                        activeOpacity={0.8}
-                        className={`${styles.typeButton} ${scaleMode === 'custom_intervals' ? styles.typeButtonActive : 'mt-4'}`}
-                    >
-                        <Text className={`${styles.typeText} ${scaleMode === 'custom_intervals' ? styles.typeTextActive : ''}`}>
-                            {t('lab.buildIntervals')}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => setScaleMode('custom_notes')}
-                        activeOpacity={0.8}
-                        className={`${styles.typeButton} ${scaleMode === 'custom_notes' ? styles.typeButtonActive : ''}`}
-                    >
-                        <Text className={`${styles.typeText} ${scaleMode === 'custom_notes' ? styles.typeTextActive : ''}`}>
-                            {t('lab.buildNotes')}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                {scaleMode === 'custom_intervals' && (
-                    <View className={styles.card}>
-                        <Text className={styles.cardTitle}>{t('lab.selectIntervals')}</Text>
-                        <View className={styles.gridList}>
-                            {INTERVAL_LABELS.map((label, index) => {
-                                const isRoot = index === 0;
-                                const isActive = customIntervals.includes(index);
-                                return (
-                                    <TouchableOpacity
-                                        key={`interval-${index}`}
-                                        onPress={() => toggleCustomInterval(index)}
-                                        activeOpacity={0.7}
-                                        className={`${styles.pillButton} ${isActive ? (isRoot ? styles.pillButtonRoot : styles.pillButtonActive) : ''}`}
-                                    >
-                                        <Text className={`${styles.pillText} ${isActive ? (isRoot ? styles.pillTextRoot : styles.pillTextActive) : ''}`}>
-                                            {label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </View>
-                )}
-
-                {scaleMode === 'custom_notes' && (
-                    <View className={styles.card}>
-                        <Text className={styles.cardTitle}>{t('lab.selectNotes')}</Text>
-                        <View className={styles.gridList}>
-                            {CHROMATIC_SCALE.map((note) => {
-                                const isRoot = note === rootNote;
-                                const isActive = customNotes.includes(note) || isRoot;
-                                return (
-                                    <TouchableOpacity
-                                        key={`custom-note-${note}`}
-                                        onPress={() => toggleCustomNote(note)}
-                                        activeOpacity={0.7}
-                                        className={`${styles.pillButton} ${isActive ? (isRoot ? styles.pillButtonRoot : styles.pillButtonActive) : ''}`}
-                                    >
-                                        <Text className={`${styles.pillText} ${isActive ? (isRoot ? styles.pillTextRoot : styles.pillTextActive) : ''}`}>
-                                            {note}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </View>
-                )}
-
-            </ScrollView>
-        </SafeAreaView>
+          </ScrollView>
+      </SafeAreaView>
     );
 }

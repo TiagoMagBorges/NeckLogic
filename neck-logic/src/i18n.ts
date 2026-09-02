@@ -180,7 +180,8 @@ const resources = {
                 next: "Next",
                 check: "Check",
                 tryAgain: "Try Again",
-                image: "Image:"
+                image: "Image:",
+                staffReadingHint: "Play the notes shown on the staff, in order"
             },
             feedback: {
                 perfect: "Perfect Timing!",
@@ -227,6 +228,19 @@ const resources = {
                 successResetTitle: "Password Reset",
                 successResetDesc: "Your password has been successfully updated.",
                 signIn: "Go to Sign In"
+            },
+            tracks: {
+                back: "Back",
+                title: "Tracks",
+                subtitle: "Choose a track to follow",
+                empty: "No tracks available yet.",
+                official: "Official",
+                paid: "Paid",
+                free: "Free",
+                start: "Start",
+                continue: "Continue",
+                errorLoad: "Could not load the tracks.",
+                errorEnroll: "Could not enroll in this track."
             }
         }
     },
@@ -378,7 +392,8 @@ const resources = {
                 next: "Próximo",
                 check: "Conferir",
                 tryAgain: "Tentar Novamente",
-                image: "Imagem:"
+                image: "Imagem:",
+                staffReadingHint: "Toque as notas mostradas na partitura, em ordem"
             },
             feedback: {
                 perfect: "Tempo Perfeito!",
@@ -425,6 +440,19 @@ const resources = {
                 successResetTitle: "Senha Redefinida",
                 successResetDesc: "Sua senha foi atualizada com sucesso.",
                 signIn: "Ir para o Login"
+            },
+            tracks: {
+                back: "Voltar",
+                title: "Trilhas",
+                subtitle: "Escolha uma trilha para seguir",
+                empty: "Nenhuma trilha disponível ainda.",
+                official: "Oficial",
+                paid: "Paga",
+                free: "Grátis",
+                start: "Começar",
+                continue: "Continuar",
+                errorLoad: "Não foi possível carregar as trilhas.",
+                errorEnroll: "Não foi possível se matricular nessa trilha."
             }
         }
     }

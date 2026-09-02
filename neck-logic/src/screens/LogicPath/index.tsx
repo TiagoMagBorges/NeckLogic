@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, Lock, FastForward } from 'lucide-react-native';
-import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { Check, Lock, FastForward, Layers } from 'lucide-react-native';
+import { useNavigation, useRoute, RouteProp, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,10 @@ type LogicPathScreenNavigationProp = CompositeNavigationProp<
 
 export default function LogicPathScreen() {
     const navigation = useNavigation<LogicPathScreenNavigationProp>();
-    const { modules, loading, refetch } = usePath();
+    const route = useRoute<RouteProp<MainTabParamList, 'LogicPath'>>();
+    const trackId = route.params?.trackId;
+    const trackTitle = route.params?.trackTitle;
+    const { modules, loading, refetch } = usePath(trackId);
     const { xp, level } = useProgress();
     const { isDarkTheme } = useTheme();
     const { t } = useTranslation();
@@ -101,9 +104,16 @@ export default function LogicPathScreen() {
               <View className={styles.contentContainer}>
                   <View className={styles.headerContainer}>
                       <View className={styles.headerTexts}>
-                          <Text className={styles.title}>{t('path.title')}</Text>
+                          <Text className={styles.title}>{trackTitle ?? t('path.title')}</Text>
                           <Text className={styles.subtitle}>{t('path.subtitle')}</Text>
                       </View>
+
+                      <TouchableOpacity
+                        className={styles.switchTrackButton}
+                        onPress={() => navigation.navigate('TrackSelection')}
+                      >
+                          <Layers size={20} color="#00D9FF" />
+                      </TouchableOpacity>
                   </View>
 
                   <View className={styles.levelCard}>
