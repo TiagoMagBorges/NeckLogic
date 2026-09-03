@@ -30,6 +30,7 @@ export default function LessonScreen() {
         selectedDegree,
         checkResult,
         hasAnswerSelected,
+        correctReveal,
         handleAction,
         handleFretPress,
         handleSelectOption,
@@ -76,6 +77,17 @@ export default function LessonScreen() {
             notes = [...notes, { ...markedPosition }];
         }
 
+        if (checkResult === 'INCORRECT') {
+            correctReveal.missedPositions.forEach((position) => {
+                notes.push({
+                    ...position,
+                    color: CORRECT_COLOR,
+                    label: getNoteFromStringAndFret(position.string, position.fret, tuning),
+                    blink: true
+                });
+            });
+        }
+
         if (selectedFrets.length > 0) {
             selectedFrets.forEach((selectedFret) => {
                 let color = '#00D9FF';
@@ -85,7 +97,10 @@ export default function LessonScreen() {
                     color = CORRECT_COLOR;
                     label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 } else if (checkResult === 'INCORRECT') {
-                    color = INCORRECT_COLOR;
+                    const isCorrectPick = correctReveal.correctSelected.some(
+                      (p) => p.string === selectedFret.string && p.fret === selectedFret.fret
+                    );
+                    color = isCorrectPick ? CORRECT_COLOR : INCORRECT_COLOR;
                     label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 }
 
@@ -94,7 +109,7 @@ export default function LessonScreen() {
         }
 
         return notes;
-    }, [currentStep, selectedFrets, checkResult, tuning]);
+    }, [currentStep, selectedFrets, checkResult, tuning, correctReveal]);
 
     const staffEntries: StaffDisplayEntry[] | undefined = useMemo(() => {
         if (isTheory && illustration?.kind === 'staff') return illustration.notes;
@@ -118,13 +133,9 @@ export default function LessonScreen() {
     let buttonText = currentStepIndex === steps.length - 1 ? t('lesson.complete') : t('lesson.next');
     let isButtonDisabled = false;
 
-    if (currentStep.type === 'DRILL') {
-        if (checkResult === 'IDLE') {
-            buttonText = t('lesson.check');
-            isButtonDisabled = !hasAnswerSelected;
-        } else if (checkResult === 'INCORRECT') {
-            buttonText = t('lesson.tryAgain');
-        }
+    if (currentStep.type === 'DRILL' && checkResult === 'IDLE') {
+        buttonText = t('lesson.check');
+        isButtonDisabled = !hasAnswerSelected;
     }
 
     const displayFrets = currentStep.type === 'DRILL' ? 22 : 12;
@@ -226,7 +237,7 @@ export default function LessonScreen() {
                         return (
                           <TouchableOpacity
                             key={index}
-                            disabled={checkResult === 'CORRECT'}
+                            disabled={checkResult !== 'IDLE'}
                             onPress={() => handleSelectOption(option)}
                             className={`py-3.5 px-4 rounded-xl border-[1.5px] ${borderColor} ${bgColor}`}
                             activeOpacity={0.8}
@@ -248,10 +259,13 @@ export default function LessonScreen() {
                               ? [selectedKey]
                               : []
                       }
-                      onSelectKey={currentStep.type === 'DRILL' && checkResult !== 'CORRECT' ? handleSelectKey : undefined}
+                      onSelectKey={currentStep.type === 'DRILL' && checkResult === 'IDLE' ? handleSelectKey : undefined}
                       highlightColors={
-                          selectedKey && checkResult !== 'IDLE'
-                            ? { [selectedKey]: checkResult === 'CORRECT' ? CORRECT_COLOR : INCORRECT_COLOR }
+                          checkResult !== 'IDLE'
+                            ? {
+                                ...(selectedKey ? { [selectedKey]: checkResult === 'CORRECT' ? CORRECT_COLOR : INCORRECT_COLOR } : {}),
+                                ...(checkResult === 'INCORRECT' && currentStep.targetKey ? { [currentStep.targetKey as string]: CORRECT_COLOR } : {})
+                            }
                             : undefined
                       }
                     />
@@ -270,10 +284,13 @@ export default function LessonScreen() {
                               ? [selectedDegree]
                               : []
                       }
-                      onSelectDegree={currentStep.type === 'DRILL' && checkResult !== 'CORRECT' ? handleSelectDegree : undefined}
+                      onSelectDegree={currentStep.type === 'DRILL' && checkResult === 'IDLE' ? handleSelectDegree : undefined}
                       highlightColors={
-                          selectedDegree && checkResult !== 'IDLE'
-                            ? { [selectedDegree]: checkResult === 'CORRECT' ? CORRECT_COLOR : INCORRECT_COLOR }
+                          checkResult !== 'IDLE'
+                            ? {
+                                ...(selectedDegree ? { [selectedDegree]: checkResult === 'CORRECT' ? CORRECT_COLOR : INCORRECT_COLOR } : {}),
+                                ...(checkResult === 'INCORRECT' && currentStep.targetDegree ? { [currentStep.targetDegree as string]: CORRECT_COLOR } : {})
+                            }
                             : undefined
                       }
                     />

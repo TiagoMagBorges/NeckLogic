@@ -1,13 +1,33 @@
 import React, { useRef, useEffect } from 'react';
-import { View, ScrollView, useWindowDimensions } from 'react-native';
+import { View, ScrollView, useWindowDimensions, Animated } from 'react-native';
 import Svg, { Rect, Line, Circle, Text, G } from 'react-native-svg';
 import { useTheme } from '../../contexts/ThemeContext';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export interface FretboardNote {
     string: number;
     fret: number;
     label?: string;
     color?: string;
+    blink?: boolean;
+}
+
+function BlinkingMarker({ cx, cy, radius, color }: { cx: number; cy: number; radius: number; color: string }) {
+    const opacity = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        const animation = Animated.loop(
+          Animated.sequence([
+              Animated.timing(opacity, { toValue: 0.25, duration: 500, useNativeDriver: false }),
+              Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: false })
+          ])
+        );
+        animation.start();
+        return () => animation.stop();
+    }, [opacity]);
+
+    return <AnimatedCircle cx={cx} cy={cy} r={radius} fill={color} opacity={opacity} />;
 }
 
 interface FretboardProps {
@@ -66,145 +86,149 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
     }, [notes, autoScroll, FRET_WIDTH]);
 
     return (
-        <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            showsHorizontalScrollIndicator={isWidescreen}
-            className="w-full"
-            bounces={false}
-            contentContainerStyle={{
-                flexGrow: 1,
-                minWidth: '100%',
-                justifyContent: shouldCenter ? 'center' : 'flex-start'
-            }}
-        >
-            <View style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} className="bg-card border-y border-border/20 shadow-xl">
-                <Svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} width="100%" height="100%">
-                    <Rect x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT} fill={bgColor} />
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={isWidescreen}
+        className="w-full"
+        bounces={false}
+        contentContainerStyle={{
+            flexGrow: 1,
+            minWidth: '100%',
+            justifyContent: shouldCenter ? 'center' : 'flex-start'
+        }}
+      >
+          <View style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} className="bg-card border-y border-border/20 shadow-xl">
+              <Svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} width="100%" height="100%">
+                  <Rect x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT} fill={bgColor} />
 
-                    {singleInlays.map((fret) => {
-                        if (fret > frets) return null;
-                        const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
-                        const cy = FRET_TOP + (availableHeight / 2);
-                        return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r={isWidescreen ? "12" : "10"} fill={inlayColor} />;
-                    })}
+                  {singleInlays.map((fret) => {
+                      if (fret > frets) return null;
+                      const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+                      const cy = FRET_TOP + (availableHeight / 2);
+                      return <Circle key={`inlay-${fret}`} cx={cx} cy={cy} r={isWidescreen ? "12" : "10"} fill={inlayColor} />;
+                  })}
 
-                    {doubleInlays.map((fret) => {
-                        if (fret > frets) return null;
-                        const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
-                        const cyCenter = FRET_TOP + (availableHeight / 2);
-                        const offset = isWidescreen ? 40 : 30;
-                        return (
-                            <React.Fragment key={`double-inlay-${fret}`}>
-                                <Circle cx={cx} cy={cyCenter - offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
-                                <Circle cx={cx} cy={cyCenter + offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
-                            </React.Fragment>
-                        );
-                    })}
+                  {doubleInlays.map((fret) => {
+                      if (fret > frets) return null;
+                      const cx = (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+                      const cyCenter = FRET_TOP + (availableHeight / 2);
+                      const offset = isWidescreen ? 40 : 30;
+                      return (
+                        <React.Fragment key={`double-inlay-${fret}`}>
+                            <Circle cx={cx} cy={cyCenter - offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
+                            <Circle cx={cx} cy={cyCenter + offset} r={isWidescreen ? "10" : "8"} fill={inlayColor} />
+                        </React.Fragment>
+                      );
+                  })}
 
-                    {fretsArray.map((i) => {
-                        const x = (i * FRET_WIDTH) + NUT_OFFSET;
-                        const isNut = i === 0;
-                        return (
-                            <Line
-                                key={`fret-${i}`}
-                                x1={x}
-                                y1={FRET_TOP}
-                                x2={x}
-                                y2={FRET_BOTTOM}
-                                stroke={isNut ? nutColor : fretLineColor}
-                                strokeWidth={isNut ? "6" : "3"}
-                            />
-                        );
-                    })}
+                  {fretsArray.map((i) => {
+                      const x = (i * FRET_WIDTH) + NUT_OFFSET;
+                      const isNut = i === 0;
+                      return (
+                        <Line
+                          key={`fret-${i}`}
+                          x1={x}
+                          y1={FRET_TOP}
+                          x2={x}
+                          y2={FRET_BOTTOM}
+                          stroke={isNut ? nutColor : fretLineColor}
+                          strokeWidth={isNut ? "6" : "3"}
+                        />
+                      );
+                  })}
 
-                    {stringsArray.map((i) => {
-                        const y = FRET_TOP + (i * stringSpacing);
-                        const stringThickness = 1.5 + (i * 0.7);
-                        return (
-                            <Line
-                                key={`string-${i}`}
-                                x1="0"
-                                y1={y}
-                                x2={SVG_WIDTH}
-                                y2={y}
-                                stroke={stringColor}
-                                strokeWidth={stringThickness}
-                            />
-                        );
-                    })}
+                  {stringsArray.map((i) => {
+                      const y = FRET_TOP + (i * stringSpacing);
+                      const stringThickness = 1.5 + (i * 0.7);
+                      return (
+                        <Line
+                          key={`string-${i}`}
+                          x1="0"
+                          y1={y}
+                          x2={SVG_WIDTH}
+                          y2={y}
+                          stroke={stringColor}
+                          strokeWidth={stringThickness}
+                        />
+                      );
+                  })}
 
-                    {markedFrets.map((fret) => {
-                        if (fret > frets) return null;
-                        const x = fret === 0
-                            ? NUT_OFFSET / 2
-                            : (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+                  {markedFrets.map((fret) => {
+                      if (fret > frets) return null;
+                      const x = fret === 0
+                        ? NUT_OFFSET / 2
+                        : (fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
 
-                        return (
-                            <Text
-                                key={`fret-text-${fret}`}
-                                x={x}
-                                y={SVG_HEIGHT - (isWidescreen ? 20 : 15)}
-                                fill={fretNumberColor}
-                                fontSize={isWidescreen ? "14" : "12"}
+                      return (
+                        <Text
+                          key={`fret-text-${fret}`}
+                          x={x}
+                          y={SVG_HEIGHT - (isWidescreen ? 20 : 15)}
+                          fill={fretNumberColor}
+                          fontSize={isWidescreen ? "14" : "12"}
+                          fontWeight="bold"
+                          textAnchor="middle"
+                        >
+                            {fret}
+                        </Text>
+                      );
+                  })}
+
+                  {notes.map((note, index) => {
+                      const cx = note.fret === 0
+                        ? NUT_OFFSET / 2
+                        : (note.fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+
+                      const cy = FRET_TOP + ((note.string - 1) * stringSpacing);
+                      const markerColor = note.color || (isDarkTheme ? '#00D9FF' : '#00B8D4');
+
+                      return (
+                        <G key={`note-${index}-${note.string}-${note.fret}`}>
+                            {note.blink ? (
+                              <BlinkingMarker cx={cx} cy={cy} radius={MARKER_RADIUS} color={markerColor} />
+                            ) : (
+                              <Circle cx={cx} cy={cy} r={MARKER_RADIUS} fill={markerColor} />
+                            )}
+                            {note.label && (
+                              <Text
+                                x={cx}
+                                y={cy + (isWidescreen ? 5 : 4)}
+                                fill={noteTextColor}
+                                fontSize={FONT_SIZE}
                                 fontWeight="bold"
                                 textAnchor="middle"
-                            >
-                                {fret}
-                            </Text>
-                        );
-                    })}
+                              >
+                                  {note.label}
+                              </Text>
+                            )}
+                        </G>
+                      );
+                  })}
 
-                    {notes.map((note, index) => {
-                        const cx = note.fret === 0
-                            ? NUT_OFFSET / 2
-                            : (note.fret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+                  {stringsArray.map((stringIndex) => {
+                      return fretsArray.map((fretIndex) => {
+                          const stringNum = stringIndex + 1;
+                          const rectWidth = fretIndex === 0 ? NUT_OFFSET : FRET_WIDTH;
+                          const rectX = fretIndex === 0 ? 0 : NUT_OFFSET + ((fretIndex - 1) * FRET_WIDTH);
+                          const rectY = FRET_TOP + (stringIndex * stringSpacing) - (stringSpacing / 2);
+                          const rectHeight = stringSpacing;
 
-                        const cy = FRET_TOP + ((note.string - 1) * stringSpacing);
-                        const markerColor = note.color || (isDarkTheme ? '#00D9FF' : '#00B8D4');
-
-                        return (
-                            <G key={`note-${index}-${note.string}-${note.fret}`}>
-                                <Circle cx={cx} cy={cy} r={MARKER_RADIUS} fill={markerColor} />
-                                {note.label && (
-                                    <Text
-                                        x={cx}
-                                        y={cy + (isWidescreen ? 5 : 4)}
-                                        fill={noteTextColor}
-                                        fontSize={FONT_SIZE}
-                                        fontWeight="bold"
-                                        textAnchor="middle"
-                                    >
-                                        {note.label}
-                                    </Text>
-                                )}
-                            </G>
-                        );
-                    })}
-
-                    {stringsArray.map((stringIndex) => {
-                        return fretsArray.map((fretIndex) => {
-                            const stringNum = stringIndex + 1;
-                            const rectWidth = fretIndex === 0 ? NUT_OFFSET : FRET_WIDTH;
-                            const rectX = fretIndex === 0 ? 0 : NUT_OFFSET + ((fretIndex - 1) * FRET_WIDTH);
-                            const rectY = FRET_TOP + (stringIndex * stringSpacing) - (stringSpacing / 2);
-                            const rectHeight = stringSpacing;
-
-                            return (
-                                <Rect
-                                    key={`touch-${stringNum}-${fretIndex}`}
-                                    x={rectX}
-                                    y={rectY}
-                                    width={rectWidth}
-                                    height={rectHeight}
-                                    fill="transparent"
-                                    onPress={() => onFretPress && onFretPress(stringNum, fretIndex)}
-                                />
-                            );
-                        });
-                    })}
-                </Svg>
-            </View>
-        </ScrollView>
+                          return (
+                            <Rect
+                              key={`touch-${stringNum}-${fretIndex}`}
+                              x={rectX}
+                              y={rectY}
+                              width={rectWidth}
+                              height={rectHeight}
+                              fill="transparent"
+                              onPress={() => onFretPress && onFretPress(stringNum, fretIndex)}
+                            />
+                          );
+                      });
+                  })}
+              </Svg>
+          </View>
+      </ScrollView>
     );
 }

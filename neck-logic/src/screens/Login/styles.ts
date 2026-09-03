@@ -15,8 +15,10 @@ export const styles = {
     label: "text-sm font-medium text-foreground ml-1",
     inputWrapper: "relative justify-center",
     iconContainer: "absolute left-4 z-10",
+    eyeButton: "absolute right-4 z-10",
 
     inputBase: "w-full bg-input-background border rounded-xl pl-12 pr-4 py-4 text-foreground focus:border-primary",
+    inputBasePassword: "pr-12",
     errorText: "text-destructive text-xs mt-1 ml-1",
 
     buttonBase: "w-full py-4 rounded-xl items-center mt-2",
