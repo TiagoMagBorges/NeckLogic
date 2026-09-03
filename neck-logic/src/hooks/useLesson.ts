@@ -31,6 +31,63 @@ function positionsEqualInOrder(a: FretPosition[], b: FretPosition[]): boolean {
     return a.every((p, i) => p.string === b[i].string && p.fret === b[i].fret);
 }
 
+function positionEquals(a: FretPosition, b: FretPosition): boolean {
+    return a.string === b.string && a.fret === b.fret;
+}
+
+interface CorrectReveal {
+    correctSelected: FretPosition[];
+    incorrectSelected: FretPosition[];
+    missedPositions: FretPosition[];
+}
+
+function matchPositionsBySet(selected: FretPosition[], targets: FretPosition[]): CorrectReveal {
+    const correctSelected = selected.filter((p) => targets.some((t) => positionEquals(t, p)));
+    const incorrectSelected = selected.filter((p) => !targets.some((t) => positionEquals(t, p)));
+    const missedPositions = targets.filter((t) => !selected.some((p) => positionEquals(t, p)));
+    return { correctSelected, incorrectSelected, missedPositions };
+}
+
+function matchPositionsInOrder(selected: FretPosition[], targets: FretPosition[]): CorrectReveal {
+    const correctSelected: FretPosition[] = [];
+    const incorrectSelected: FretPosition[] = [];
+    const missedPositions: FretPosition[] = [];
+    const len = Math.max(selected.length, targets.length);
+
+    for (let i = 0; i < len; i++) {
+        const sel = selected[i];
+        const tgt = targets[i];
+        if (sel && tgt && positionEquals(sel, tgt)) {
+            correctSelected.push(sel);
+        } else {
+            if (sel) incorrectSelected.push(sel);
+            if (tgt) missedPositions.push(tgt);
+        }
+    }
+
+    return { correctSelected, incorrectSelected, missedPositions };
+}
+
+function matchNoteNames(selected: FretPosition[], requiredNames: string[], tuning: string[]): CorrectReveal {
+    const remaining = [...requiredNames];
+    const correctSelected: FretPosition[] = [];
+    const incorrectSelected: FretPosition[] = [];
+
+    selected.forEach((pos) => {
+        const noteName = getNoteFromStringAndFret(pos.string, pos.fret, tuning).toUpperCase();
+        const idx = remaining.indexOf(noteName);
+        if (idx >= 0) {
+            remaining.splice(idx, 1);
+            correctSelected.push(pos);
+        } else {
+            incorrectSelected.push(pos);
+        }
+    });
+
+    const missedPositions = remaining.flatMap((noteName) => getFretboardPositionsForNotes([noteName], tuning, 22));
+    return { correctSelected, incorrectSelected, missedPositions };
+}
+
 export function useLesson() {
     const navigation = useNavigation<any>();
     const route = useRoute<LessonScreenRouteProp>();
@@ -170,6 +227,73 @@ export function useLesson() {
         }
     }
 
+    function getCorrectReveal(): CorrectReveal {
+        const empty: CorrectReveal = { correctSelected: [], incorrectSelected: [], missedPositions: [] };
+        if (!currentStep) return empty;
+
+        switch (exerciseType) {
+            case 'CHORD_BUILD':
+            case 'TRIAD_INVERSION': {
+                const root = (currentStep.root as string) ?? 'C';
+                const quality = (currentStep.quality as string) ?? 'major';
+                const required = getChordNotes(root, quality).map((n) => n.toUpperCase());
+                return matchNoteNames(selectedFrets, required, tuning);
+            }
+
+            case 'SHAPE_MATCH': {
+                if (Array.isArray(currentStep.targetShape)) {
+                    return matchPositionsBySet(selectedFrets, currentStep.targetShape as FretPosition[]);
+                }
+                if (Array.isArray(currentStep.targetNotes)) {
+                    const required = (currentStep.targetNotes as string[]).map((n) => n.toUpperCase());
+                    return matchNoteNames(selectedFrets, required, tuning);
+                }
+                const targetNote = ((currentStep.targetNote as string) ?? '').toUpperCase();
+                return matchNoteNames(selectedFrets, targetNote ? [targetNote] : [], tuning);
+            }
+
+            case 'FIND_ALL_OCCURRENCES': {
+                const targetNote = (currentStep.targetNote as string) ?? '';
+                const maxFret = (currentStep.maxFret as number) ?? 22;
+                return matchPositionsBySet(selectedFrets, getFretboardPositionsForNotes([targetNote], tuning, maxFret));
+            }
+
+            case 'SCALE_DEGREES':
+            case 'ARPEGGIO':
+            case 'TAB_READING':
+                return matchPositionsInOrder(selectedFrets, (currentStep.targetSequence as FretPosition[]) ?? []);
+
+            case 'STAFF_READING': {
+                const staffNotes = (currentStep.staffNotes as StaffNoteEntry[]) ?? [];
+                const targetNoteNames = staffNotes.filter((n) => n.note).map((n) => (n.note as string).toUpperCase().replace(/\d+$/, ''));
+
+                const correctSelected: FretPosition[] = [];
+                const incorrectSelected: FretPosition[] = [];
+                const missedNoteNames: string[] = [];
+
+                const len = Math.max(selectedFrets.length, targetNoteNames.length);
+                for (let i = 0; i < len; i++) {
+                    const pos = selectedFrets[i];
+                    const targetNoteName = targetNoteNames[i];
+                    const noteName = pos ? getNoteFromStringAndFret(pos.string, pos.fret, tuning).toUpperCase() : undefined;
+
+                    if (pos && noteName === targetNoteName) {
+                        correctSelected.push(pos);
+                    } else {
+                        if (pos) incorrectSelected.push(pos);
+                        if (targetNoteName) missedNoteNames.push(targetNoteName);
+                    }
+                }
+
+                const missedPositions = missedNoteNames.flatMap((noteName) => getFretboardPositionsForNotes([noteName], tuning, 22));
+                return { correctSelected, incorrectSelected, missedPositions };
+            }
+
+            default:
+                return empty;
+        }
+    }
+
     function hasAnswerSelected(): boolean {
         if (!currentStep) return false;
 
@@ -198,15 +322,6 @@ export function useLesson() {
                 }
 
                 setCheckResult(isCorrect ? 'CORRECT' : 'INCORRECT');
-                return;
-            }
-
-            if (checkResult === 'INCORRECT') {
-                setSelectedFrets([]);
-                setSelectedOption(null);
-                setSelectedKey(null);
-                setSelectedDegree(null);
-                setCheckResult('IDLE');
                 return;
             }
         }
@@ -241,13 +356,20 @@ export function useLesson() {
     }
 
     function handleFretPress(stringNum: number, fretNum: number) {
-        if (!currentStep || currentStep.type !== 'DRILL' || checkResult === 'CORRECT') return;
+        if (!currentStep || currentStep.type !== 'DRILL' || checkResult !== 'IDLE') return;
         if (!exerciseType || !FRETBOARD_EXERCISE_TYPES.includes(exerciseType)) return;
 
         setCheckResult('IDLE');
 
         if (exerciseType === 'STAFF_READING' || SEQUENCE_TYPES.includes(exerciseType)) {
-            setSelectedFrets((prev) => [...prev, { string: stringNum, fret: fretNum }]);
+            setSelectedFrets((prev) => {
+                const indexFromEnd = [...prev].reverse().findIndex((p) => p.string === stringNum && p.fret === fretNum);
+                if (indexFromEnd === -1) {
+                    return [...prev, { string: stringNum, fret: fretNum }];
+                }
+                const index = prev.length - 1 - indexFromEnd;
+                return [...prev.slice(0, index), ...prev.slice(index + 1)];
+            });
             return;
         }
 
@@ -269,20 +391,17 @@ export function useLesson() {
     }
 
     function handleSelectOption(option: string) {
-        if (checkResult === 'CORRECT') return;
-        setCheckResult('IDLE');
+        if (checkResult !== 'IDLE') return;
         setSelectedOption(option);
     }
 
     function handleSelectKey(note: string) {
-        if (checkResult === 'CORRECT') return;
-        setCheckResult('IDLE');
+        if (checkResult !== 'IDLE') return;
         setSelectedKey(note);
     }
 
     function handleSelectDegree(degree: string) {
-        if (checkResult === 'CORRECT') return;
-        setCheckResult('IDLE');
+        if (checkResult !== 'IDLE') return;
         setSelectedDegree(degree);
     }
 
@@ -302,6 +421,9 @@ export function useLesson() {
         selectedDegree,
         checkResult,
         hasAnswerSelected: hasAnswerSelected(),
+        correctReveal: checkResult === 'INCORRECT'
+          ? getCorrectReveal()
+          : { correctSelected: [], incorrectSelected: [], missedPositions: [] },
         handleAction,
         handleFretPress,
         handleSelectOption,

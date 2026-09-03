@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, Check } from 'lucide-react-native';
+import { Mail, Lock, Check, Eye, EyeOff } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -21,6 +21,7 @@ export default function LoginScreen() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
@@ -123,15 +124,26 @@ export default function LoginScreen() {
                                   <TextInput
                                     placeholder={t('login.passwordPlaceholder')}
                                     placeholderTextColor="#A1A1AA"
-                                    className={`${styles.inputBase} ${getInputStyle(!!errors.password)}`}
+                                    className={`${styles.inputBase} ${styles.inputBasePassword} ${getInputStyle(!!errors.password)}`}
                                     value={password}
                                     onChangeText={(text) => {
                                         setPassword(text);
                                         if (errors.password) setErrors({ ...errors, password: undefined });
                                     }}
-                                    secureTextEntry
+                                    secureTextEntry={!showPassword}
                                     editable={!loading}
                                   />
+                                  <TouchableOpacity
+                                    onPress={() => setShowPassword(!showPassword)}
+                                    className={styles.eyeButton}
+                                    disabled={loading}
+                                  >
+                                      {showPassword ? (
+                                        <EyeOff size={18} color="#A1A1AA" />
+                                      ) : (
+                                        <Eye size={18} color="#A1A1AA" />
+                                      )}
+                                  </TouchableOpacity>
                               </View>
                               {errors.password && <Text className={styles.errorText}>{errors.password}</Text>}
 

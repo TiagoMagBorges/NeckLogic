@@ -181,6 +181,7 @@ const resources = {
                 check: "Check",
                 tryAgain: "Try Again",
                 image: "Image:",
+                imageUnavailable: "Image unavailable",
                 staffReadingHint: "Play the notes shown on the staff, in order"
             },
             feedback: {
@@ -393,6 +394,7 @@ const resources = {
                 check: "Conferir",
                 tryAgain: "Tentar Novamente",
                 image: "Imagem:",
+                imageUnavailable: "Imagem indisponível",
                 staffReadingHint: "Toque as notas mostradas na partitura, em ordem"
             },
             feedback: {
