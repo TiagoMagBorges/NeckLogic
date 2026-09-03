@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +40,12 @@ export default function LessonScreen() {
     } = useLesson();
 
     const { t } = useTranslation();
+
+    const [imageFailed, setImageFailed] = useState(false);
+
+    useEffect(() => {
+        setImageFailed(false);
+    }, [currentStepIndex]);
 
     const exerciseType = currentStep?.exerciseType;
     const isTheory = currentStep?.type === 'THEORY';
@@ -147,9 +153,18 @@ export default function LessonScreen() {
           <View className={styles.contentContainer}>
               <Text className={styles.typeTag}>{currentStep.type.replace('_', ' ')}</Text>
 
-              {currentStep.imageUrl && (
-                <View className={styles.imageContainer}>
-                    <Text className={styles.imagePlaceholderText}>{t('lesson.image')} {currentStep.imageUrl}</Text>
+              {!!currentStep.imageUrl && (
+                <View className={`${styles.imageContainer} overflow-hidden`}>
+                    {imageFailed ? (
+                      <Text className={styles.imagePlaceholderText}>{t('lesson.imageUnavailable')}</Text>
+                    ) : (
+                      <Image
+                        source={{ uri: currentStep.imageUrl as string }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                        onError={() => setImageFailed(true)}
+                      />
+                    )}
                 </View>
               )}
 

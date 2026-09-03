@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider } from './src/contexts/AuthContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
-import { ProgressProvider } from './src/contexts/ProgressContext'; // <-- IMPORTAÇÃO ADICIONADA
+import { ProgressProvider } from './src/contexts/ProgressContext';
 import Routes from './src/navigation/Routes';
 
 function AppContent() {
