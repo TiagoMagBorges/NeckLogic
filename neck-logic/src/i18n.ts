@@ -236,13 +236,21 @@ const resources = {
                 title: "Tracks",
                 subtitle: "Choose a track to follow",
                 empty: "No tracks available yet.",
+                searchPlaceholder: "Search by track or teacher name",
+                searchEmpty: "No tracks match your search.",
                 official: "Official",
                 paid: "Paid",
                 free: "Free",
                 start: "Start",
                 continue: "Continue",
                 errorLoad: "Could not load the tracks.",
-                errorEnroll: "Could not enroll in this track."
+                errorEnroll: "Could not enroll in this track.",
+                confirmPurchaseTitle: "Confirm Purchase",
+                confirmPurchaseDesc: "Confirm purchase for {{price}}? This is a simulation — no real charge will be made.",
+                confirmPurchaseConfirm: "Confirm",
+                switchTrackTitle: "Your Tracks",
+                exploreMore: "Explore more tracks",
+                noEnrolledTracks: "You haven't started any track yet."
             }
         }
     },
@@ -450,13 +458,21 @@ const resources = {
                 title: "Trilhas",
                 subtitle: "Escolha uma trilha para seguir",
                 empty: "Nenhuma trilha disponível ainda.",
+                searchPlaceholder: "Buscar por nome da trilha ou professor",
+                searchEmpty: "Nenhuma trilha encontrada para sua busca.",
                 official: "Oficial",
                 paid: "Paga",
                 free: "Grátis",
                 start: "Começar",
                 continue: "Continuar",
                 errorLoad: "Não foi possível carregar as trilhas.",
-                errorEnroll: "Não foi possível se matricular nessa trilha."
+                errorEnroll: "Não foi possível se matricular nessa trilha.",
+                confirmPurchaseTitle: "Confirmar Compra",
+                confirmPurchaseDesc: "Confirmar a compra por {{price}}? Isso é uma simulação — nenhuma cobrança real será feita.",
+                confirmPurchaseConfirm: "Confirmar",
+                switchTrackTitle: "Suas Trilhas",
+                exploreMore: "Explorar mais trilhas",
+                noEnrolledTracks: "Você ainda não começou nenhuma trilha."
             }
         }
     }

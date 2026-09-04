@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Search } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -11,13 +11,33 @@ import { TrackDTO } from '../../types/Track';
 import { RootStackParamList } from '../../navigation/Routes';
 import { styles } from './styles';
 
+function formatPrice(priceCents: number | null, language: string): string {
+  const value = (priceCents ?? 0) / 100;
+  if (language.startsWith('pt')) {
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+  }
+  return `$${value.toFixed(2)}`;
+}
+
 export default function TrackSelectionScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [tracks, setTracks] = useState<TrackDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrollingId, setEnrollingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredTracks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return tracks;
+
+    return tracks.filter(
+      (track) =>
+        track.title.toLowerCase().includes(query) ||
+        track.ownerName.toLowerCase().includes(query)
+    );
+  }, [tracks, searchQuery]);
 
   const fetchTracks = useCallback(async () => {
     try {
@@ -37,7 +57,7 @@ export default function TrackSelectionScreen() {
     }, [fetchTracks])
   );
 
-  async function handleSelect(track: TrackDTO) {
+  async function enrollAndOpen(track: TrackDTO) {
     try {
       if (!track.enrolled) {
         setEnrollingId(track.id);
@@ -53,6 +73,22 @@ export default function TrackSelectionScreen() {
     } finally {
       setEnrollingId(null);
     }
+  }
+
+  function handleSelect(track: TrackDTO) {
+    if (!track.enrolled && track.paid) {
+      Alert.alert(
+        t('tracks.confirmPurchaseTitle'),
+        t('tracks.confirmPurchaseDesc', { price: formatPrice(track.priceCents, i18n.language) }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('tracks.confirmPurchaseConfirm'), onPress: () => enrollAndOpen(track) },
+        ]
+      );
+      return;
+    }
+
+    enrollAndOpen(track);
   }
 
   if (loading) {
@@ -77,9 +113,25 @@ export default function TrackSelectionScreen() {
             <Text className={styles.subtitle}>{t('tracks.subtitle')}</Text>
           </View>
 
+          <View className={styles.searchWrapper}>
+            <Search size={18} color="#A1A1AA" />
+            <TextInput
+              placeholder={t('tracks.searchPlaceholder')}
+              placeholderTextColor="#A1A1AA"
+              className={styles.searchInput}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+            />
+          </View>
+
           {tracks.length === 0 && <Text className={styles.emptyText}>{t('tracks.empty')}</Text>}
 
-          {tracks.map((track) => (
+          {tracks.length > 0 && filteredTracks.length === 0 && (
+            <Text className={styles.emptyText}>{t('tracks.searchEmpty')}</Text>
+          )}
+
+          {filteredTracks.map((track) => (
             <View key={track.id} className={styles.card}>
               <View className={styles.cardHeader}>
                 <Text className={styles.cardTitle}>{track.title}</Text>
@@ -89,7 +141,7 @@ export default function TrackSelectionScreen() {
                   </Text>
                 )}
                 <Text className={`${styles.badge} ${track.paid ? styles.badgePaid : styles.badgeFree}`}>
-                  {track.paid ? t('tracks.paid') : t('tracks.free')}
+                  {track.paid ? formatPrice(track.priceCents, i18n.language) : t('tracks.free')}
                 </Text>
               </View>
 

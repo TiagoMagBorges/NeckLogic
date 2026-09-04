@@ -7,9 +7,12 @@ export const styles = {
   backButton: "flex-row items-center gap-2 mb-6",
   backText: "text-sm text-muted-foreground font-medium",
 
-  headerContainer: "mb-8",
+  headerContainer: "mb-6",
   title: "text-3xl font-bold text-foreground",
   subtitle: "text-muted-foreground text-sm mt-1",
+
+  searchWrapper: "flex-row items-center gap-2 bg-input-background border border-border rounded-xl px-4 py-3 mb-8",
+  searchInput: "flex-1 text-foreground",
 
   emptyText: "text-muted-foreground text-center mt-10",
 

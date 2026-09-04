@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, Lock, FastForward, Layers } from 'lucide-react-native';
+import { Check, Lock, FastForward, Layers, Compass } from 'lucide-react-native';
 import { useNavigation, useRoute, RouteProp, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -14,6 +14,8 @@ import { styles, getNodeTheme } from './styles';
 import { RootStackParamList } from '../../navigation/Routes';
 import { MainTabParamList } from '../../navigation/MainTabs';
 import { api } from '../../services/api';
+import { StorageService, StorageKeys } from '../../services/storage';
+import { TrackDTO } from '../../types/Track';
 import { SkipSectionModal } from '../../components/SkipSectionModal';
 
 type LogicPathScreenNavigationProp = CompositeNavigationProp<
@@ -24,16 +26,70 @@ type LogicPathScreenNavigationProp = CompositeNavigationProp<
 export default function LogicPathScreen() {
     const navigation = useNavigation<LogicPathScreenNavigationProp>();
     const route = useRoute<RouteProp<MainTabParamList, 'LogicPath'>>();
-    const trackId = route.params?.trackId;
-    const trackTitle = route.params?.trackTitle;
-    const { modules, loading, refetch } = usePath(trackId);
     const { xp, level } = useProgress();
     const { isDarkTheme } = useTheme();
     const { t } = useTranslation();
 
+    const [activeTrackId, setActiveTrackId] = useState<number | undefined>(route.params?.trackId);
+    const [activeTrackTitle, setActiveTrackTitle] = useState<string | undefined>(route.params?.trackTitle);
+    const { modules, loading, refetch } = usePath(activeTrackId);
+
     const [skipModalVisible, setSkipModalVisible] = useState(false);
     const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
     const [isSkipping, setIsSkipping] = useState(false);
+
+    const [switcherVisible, setSwitcherVisible] = useState(false);
+    const [enrolledTracks, setEnrolledTracks] = useState<TrackDTO[]>([]);
+    const [loadingTracks, setLoadingTracks] = useState(false);
+
+    useEffect(() => {
+        if (route.params?.trackId) {
+            setActiveTrackId(route.params.trackId);
+            setActiveTrackTitle(route.params.trackTitle);
+            StorageService.setItem(
+              StorageKeys.SELECTED_TRACK,
+              JSON.stringify({ id: route.params.trackId, title: route.params.trackTitle })
+            );
+        }
+    }, [route.params?.trackId, route.params?.trackTitle]);
+
+    useEffect(() => {
+        if (!route.params?.trackId) {
+            (async () => {
+                const stored = await StorageService.getItem(StorageKeys.SELECTED_TRACK);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    setActiveTrackId(parsed.id);
+                    setActiveTrackTitle(parsed.title);
+                }
+            })();
+        }
+    }, []);
+
+    const openSwitcher = useCallback(async () => {
+        setSwitcherVisible(true);
+        setLoadingTracks(true);
+        try {
+            const response = await api.get<TrackDTO[]>('/tracks');
+            setEnrolledTracks(response.data.filter((track) => track.enrolled));
+        } catch (error) {
+            Alert.alert(t('common.error'), t('tracks.errorLoad'));
+        } finally {
+            setLoadingTracks(false);
+        }
+    }, [t]);
+
+    async function handleSwitchTrack(track: TrackDTO) {
+        setActiveTrackId(track.id);
+        setActiveTrackTitle(track.title);
+        await StorageService.setItem(StorageKeys.SELECTED_TRACK, JSON.stringify({ id: track.id, title: track.title }));
+        setSwitcherVisible(false);
+    }
+
+    function handleExploreMore() {
+        setSwitcherVisible(false);
+        navigation.navigate('TrackSelection');
+    }
 
     if (loading) {
         return (
@@ -104,13 +160,13 @@ export default function LogicPathScreen() {
               <View className={styles.contentContainer}>
                   <View className={styles.headerContainer}>
                       <View className={styles.headerTexts}>
-                          <Text className={styles.title}>{trackTitle ?? t('path.title')}</Text>
+                          <Text className={styles.title}>{activeTrackTitle ?? t('path.title')}</Text>
                           <Text className={styles.subtitle}>{t('path.subtitle')}</Text>
                       </View>
 
                       <TouchableOpacity
                         className={styles.switchTrackButton}
-                        onPress={() => navigation.navigate('TrackSelection')}
+                        onPress={openSwitcher}
                       >
                           <Layers size={20} color="#00D9FF" />
                       </TouchableOpacity>
@@ -221,6 +277,40 @@ export default function LogicPathScreen() {
             onClose={() => setSkipModalVisible(false)}
             onConfirm={handleSkipSection}
           />
+
+          <Modal visible={switcherVisible} transparent animationType="fade" onRequestClose={() => setSwitcherVisible(false)}>
+              <TouchableOpacity
+                className={styles.switcherBackdrop}
+                activeOpacity={1}
+                onPress={() => setSwitcherVisible(false)}
+              >
+                  <View className={styles.switcherCard}>
+                      <Text className={styles.switcherTitle}>{t('tracks.switchTrackTitle')}</Text>
+
+                      {loadingTracks ? (
+                        <ActivityIndicator size="small" color="#00D9FF" style={{ marginVertical: 16 }} />
+                      ) : enrolledTracks.length === 0 ? (
+                        <Text className={styles.switcherEmpty}>{t('tracks.noEnrolledTracks')}</Text>
+                      ) : (
+                        enrolledTracks.map((track) => (
+                          <TouchableOpacity
+                            key={track.id}
+                            className={styles.switcherItem}
+                            onPress={() => handleSwitchTrack(track)}
+                          >
+                              <Text className={styles.switcherItemText}>{track.title}</Text>
+                              {track.id === activeTrackId && <Check size={18} color="#00D9FF" />}
+                          </TouchableOpacity>
+                        ))
+                      )}
+
+                      <TouchableOpacity className={styles.switcherExploreButton} onPress={handleExploreMore}>
+                          <Compass size={16} color="#00D9FF" />
+                          <Text className={styles.switcherExploreText}>{t('tracks.exploreMore')}</Text>
+                      </TouchableOpacity>
+                  </View>
+              </TouchableOpacity>
+          </Modal>
       </SafeAreaView>
     );
 }
