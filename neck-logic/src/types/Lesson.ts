@@ -63,6 +63,11 @@ export type TheoryIllustration =
   | TheoryHarmonicFieldIllustration
   | TheoryStaffIllustration;
 
+export interface TheoryAudioSequence {
+    sequence: StaffNoteEntry[];
+    tempo?: number;
+}
+
 export interface LessonStep {
     type: 'THEORY' | 'DRILL';
     exerciseType?: ExerciseType;
@@ -71,6 +76,7 @@ export interface LessonStep {
     imageUrl?: string;
     question?: string;
     illustration?: TheoryIllustration;
+    audio?: TheoryAudioSequence;
     [key: string]: unknown;
 }
 

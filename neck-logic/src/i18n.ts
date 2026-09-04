@@ -182,7 +182,8 @@ const resources = {
                 tryAgain: "Try Again",
                 image: "Image:",
                 imageUnavailable: "Image unavailable",
-                staffReadingHint: "Play the notes shown on the staff, in order"
+                staffReadingHint: "Play the notes shown on the staff, in order",
+                playAudio: "Play sound"
             },
             feedback: {
                 perfect: "Perfect Timing!",
@@ -395,7 +396,8 @@ const resources = {
                 tryAgain: "Tentar Novamente",
                 image: "Imagem:",
                 imageUnavailable: "Imagem indisponível",
-                staffReadingHint: "Toque as notas mostradas na partitura, em ordem"
+                staffReadingHint: "Toque as notas mostradas na partitura, em ordem",
+                playAudio: "Tocar som"
             },
             feedback: {
                 perfect: "Tempo Perfeito!",
