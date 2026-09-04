@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X } from 'lucide-react-native';
+import { X, Volume2 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
 import { styles, getProgressStyle } from './styles';
@@ -10,7 +10,8 @@ import { CircleOfFifthsWheel } from '../../components/CircleOfFifthsWheel';
 import { HarmonicFieldWheel } from '../../components/HarmonicFieldWheel';
 import { StaffDisplay, StaffNoteEntry as StaffDisplayEntry } from '../../components/StaffDisplay';
 import { TabDisplay } from '../../components/TabDisplay';
-import { getNoteFromStringAndFret } from '../../core/MusicEngine';
+import { getNoteFromStringAndFret, getNoteWithOctaveFromStringAndFret } from '../../core/MusicEngine';
+import { playNote, playSequence } from '../../core/AudioEngine';
 import { useLesson, FRETBOARD_EXERCISE_TYPES } from '../../hooks/useLesson';
 import { FretPosition, StaffNoteEntry } from '../../types/Lesson';
 
@@ -140,6 +141,11 @@ export default function LessonScreen() {
 
     const displayFrets = currentStep.type === 'DRILL' ? 22 : 12;
 
+    function handleFretPressWithSound(stringNum: number, fretNum: number) {
+        playNote(getNoteWithOctaveFromStringAndFret(stringNum, fretNum, tuning));
+        handleFretPress(stringNum, fretNum);
+    }
+
     const question = (currentStep.question as string | undefined) ?? undefined;
     const options = (currentStep.options as string[] | undefined) ?? [];
     const correctAnswer = currentStep.correctAnswer as string | undefined;
@@ -183,6 +189,20 @@ export default function LessonScreen() {
 
               {currentStep.text && (
                 <Text className={styles.bodyText}>{currentStep.text as string}</Text>
+              )}
+
+              {isTheory && !!currentStep.audio && (
+                <TouchableOpacity
+                  onPress={() => {
+                      const audio = currentStep.audio as { sequence: StaffNoteEntry[]; tempo?: number };
+                      playSequence(audio.sequence, audio.tempo);
+                  }}
+                  className="flex-row items-center self-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-4 py-2 mt-1 mb-2"
+                  activeOpacity={0.8}
+                >
+                    <Volume2 size={16} color="#00D9FF" />
+                    <Text className="text-primary text-sm font-semibold">{t('lesson.playAudio')}</Text>
+                </TouchableOpacity>
               )}
 
               {currentStep.type === 'DRILL' && exerciseType !== 'STAFF_READING' && question && (
@@ -304,7 +324,7 @@ export default function LessonScreen() {
                           key={`step-${currentStepIndex}`}
                           frets={displayFrets}
                           notes={notesToRender}
-                          onFretPress={currentStep.type === 'DRILL' ? handleFretPress : undefined}
+                          onFretPress={currentStep.type === 'DRILL' ? handleFretPressWithSound : undefined}
                           autoScroll={isTheory}
                         />
                     </View>
