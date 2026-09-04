@@ -7,6 +7,7 @@ export const StorageKeys = {
   LEVEL: '@NeckLogic:level',
   STREAK: '@NeckLogic:streak',
   TUNING: '@NeckLogic:tuning',
+  SELECTED_TRACK: '@NeckLogic:selectedTrack',
 } as const;
 
 export const StorageService = {

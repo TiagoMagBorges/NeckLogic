@@ -44,6 +44,15 @@ export const styles = {
     statValuePrimary: "text-2xl font-bold text-primary",
     statValueMuted: "text-2xl font-bold text-muted-foreground",
     statLabel: "text-[10px] text-muted-foreground font-bold uppercase",
+
+    switcherBackdrop: "flex-1 bg-black/50 justify-center items-center px-6",
+    switcherCard: "w-full max-w-sm bg-card border border-border/10 rounded-2xl p-5",
+    switcherTitle: "text-lg font-bold text-foreground mb-3",
+    switcherEmpty: "text-muted-foreground text-sm text-center py-4",
+    switcherItem: "flex-row items-center justify-between py-3 border-b border-border/10",
+    switcherItemText: "text-foreground font-medium text-base",
+    switcherExploreButton: "flex-row items-center justify-center gap-2 mt-4 py-3 rounded-xl bg-primary/10 border border-primary/20",
+    switcherExploreText: "text-primary font-bold text-sm",
 };
 
 export const getNodeTheme = (status: ModuleStatus, isDarkTheme: boolean) => {
