@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, ScrollView, useWindowDimensions, Animated } from 'react-native';
 import Svg, { Rect, Line, Circle, Text, G } from 'react-native-svg';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 export interface FretboardNote {
     string: number;
@@ -11,6 +12,7 @@ export interface FretboardNote {
     label?: string;
     color?: string;
     blink?: boolean;
+    fadeOut?: boolean;
 }
 
 function BlinkingMarker({ cx, cy, radius, color }: { cx: number; cy: number; radius: number; color: string }) {
@@ -30,15 +32,32 @@ function BlinkingMarker({ cx, cy, radius, color }: { cx: number; cy: number; rad
     return <AnimatedCircle cx={cx} cy={cy} r={radius} fill={color} opacity={opacity} />;
 }
 
+function FadingGroup({ children }: { children: React.ReactNode }) {
+    const opacity = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        const animation = Animated.sequence([
+            Animated.delay(400),
+            Animated.timing(opacity, { toValue: 0, duration: 400, useNativeDriver: false })
+        ]);
+        animation.start();
+        return () => animation.stop();
+    }, [opacity]);
+
+    return <AnimatedG opacity={opacity}>{children}</AnimatedG>;
+}
+
 interface FretboardProps {
     frets?: number;
     notes?: FretboardNote[];
     onFretPress?: (stringNum: number, fretNum: number) => void;
     autoScroll?: boolean;
+    focusFret?: number;
 }
 
-export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = false }: FretboardProps) {
+export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = false, focusFret }: FretboardProps) {
     const scrollViewRef = useRef<ScrollView>(null);
+    const [viewportWidth, setViewportWidth] = useState(0);
     const { width } = useWindowDimensions();
     const { isDarkTheme } = useTheme();
 
@@ -75,15 +94,27 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
     const markedFrets = [0, ...singleInlays, ...doubleInlays];
 
     useEffect(() => {
-        if (!scrollViewRef.current || !autoScroll || notes.length === 0) return;
+        if (!scrollViewRef.current || !autoScroll || !viewportWidth || shouldCenter) return;
 
-        const minFret = Math.min(...notes.map(n => n.fret));
-        const scrollX = Math.max(0, (minFret - 1) * FRET_WIDTH);
+        const targetFret = focusFret ?? (notes.length > 0 ? Math.min(...notes.map(n => n.fret)) : undefined);
+        if (targetFret === undefined) return;
+
+        const targetX = targetFret === 0
+          ? NUT_OFFSET / 2
+          : (targetFret * FRET_WIDTH) - (FRET_WIDTH / 2) + NUT_OFFSET;
+
+        const leftEdge = targetX - MARKER_RADIUS;
+        const rightEdge = targetX + MARKER_RADIUS;
+
+        if (leftEdge >= 0 && rightEdge <= viewportWidth) return;
+
+        const margin = FRET_WIDTH / 2;
+        const scrollX = Math.max(0, rightEdge + margin - viewportWidth);
 
         setTimeout(() => {
             scrollViewRef.current?.scrollTo({ x: scrollX, animated: true });
         }, 50);
-    }, [notes, autoScroll, FRET_WIDTH]);
+    }, [notes, autoScroll, FRET_WIDTH, focusFret, viewportWidth, shouldCenter, NUT_OFFSET, MARKER_RADIUS]);
 
     return (
       <ScrollView
@@ -92,6 +123,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
         showsHorizontalScrollIndicator={isWidescreen}
         className="w-full"
         bounces={false}
+        onLayout={(e) => setViewportWidth(e.nativeEvent.layout.width)}
         contentContainerStyle={{
             flexGrow: 1,
             minWidth: '100%',
@@ -167,7 +199,7 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                           y={SVG_HEIGHT - (isWidescreen ? 20 : 15)}
                           fill={fretNumberColor}
                           fontSize={isWidescreen ? "14" : "12"}
-                          fontWeight="bold"
+                          fontFamily="SpaceMono_700Bold"
                           textAnchor="middle"
                         >
                             {fret}
@@ -183,8 +215,8 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                       const cy = FRET_TOP + ((note.string - 1) * stringSpacing);
                       const markerColor = note.color || (isDarkTheme ? '#00D9FF' : '#00B8D4');
 
-                      return (
-                        <G key={`note-${index}-${note.string}-${note.fret}`}>
+                      const markerContent = (
+                        <>
                             {note.blink ? (
                               <BlinkingMarker cx={cx} cy={cy} radius={MARKER_RADIUS} color={markerColor} />
                             ) : (
@@ -202,6 +234,12 @@ export function Fretboard({ frets = 22, notes = [], onFretPress, autoScroll = fa
                                   {note.label}
                               </Text>
                             )}
+                        </>
+                      );
+
+                      return (
+                        <G key={`note-${index}-${note.string}-${note.fret}`}>
+                            {note.fadeOut ? <FadingGroup>{markerContent}</FadingGroup> : markerContent}
                         </G>
                       );
                   })}

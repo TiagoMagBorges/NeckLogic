@@ -9,4 +9,8 @@ export interface ModuleDTO {
     sectionId: number;
     sectionTitle: string;
     sectionDescription: string;
+    sectionOrderIndex: number;
+    sectionSkipRequiresTest: boolean;
+    sectionSkipTestModuleId: number | null;
+    sectionSkipPassThreshold: number | null;
 }

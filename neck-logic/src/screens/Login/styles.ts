@@ -6,13 +6,13 @@ export const styles = {
     wrapper: "w-full max-w-[400px]",
 
     headerContainer: "items-center mb-10",
-    logoText: "text-4xl font-bold tracking-tight text-foreground mb-2",
+    logoText: "font-serif-bold text-4xl tracking-tight text-foreground mb-2",
     logoAccent: "text-primary",
-    subtitle: "text-muted-foreground text-sm",
+    subtitle: "font-sans text-muted-foreground text-sm",
 
     formContainer: "gap-5",
     inputGroup: "gap-2",
-    label: "text-sm font-medium text-foreground ml-1",
+    label: "font-sans-medium text-sm text-foreground ml-1",
     inputWrapper: "relative justify-center",
     iconContainer: "absolute left-4 z-10",
     eyeButton: "absolute right-4 z-10",
@@ -26,16 +26,16 @@ export const styles = {
 
     dividerContainer: "flex-row items-center my-8",
     dividerLine: "flex-1 h-[1px] bg-border",
-    dividerText: "mx-4 text-sm text-muted-foreground",
+    dividerText: "font-sans mx-4 text-sm text-muted-foreground",
 
     socialContainer: "gap-4",
     socialButton: "w-full bg-card border border-border py-4 rounded-xl flex-row items-center justify-center gap-3",
-    socialText: "text-foreground font-medium",
-    googleIcon: "text-foreground font-bold text-lg",
+    socialText: "font-sans-medium text-foreground",
+    googleIcon: "font-sans-bold text-foreground text-lg",
 
     footerContainer: "flex-row justify-center mt-8",
-    footerText: "text-sm text-muted-foreground",
-    signupText: "text-primary font-bold ml-1",
+    footerText: "font-sans text-sm text-muted-foreground",
+    signupText: "font-sans-bold text-primary ml-1",
 };
 
 export const getInputStyle = (hasError: boolean) => {
