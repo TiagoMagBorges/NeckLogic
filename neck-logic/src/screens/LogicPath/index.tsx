@@ -35,7 +35,7 @@ export default function LogicPathScreen() {
     const { modules, loading, refetch } = usePath(activeTrackId);
 
     const [skipModalVisible, setSkipModalVisible] = useState(false);
-    const [selectedSection, setSelectedSection] = useState<{ id: number; title: string } | null>(null);
+    const [selectedSection, setSelectedSection] = useState<{ id: number; title: string; requiresTest: boolean; skipTestModuleId: number | null } | null>(null);
     const [isSkipping, setIsSkipping] = useState(false);
 
     const [switcherVisible, setSwitcherVisible] = useState(false);
@@ -64,6 +64,7 @@ export default function LogicPathScreen() {
                 }
             })();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const openSwitcher = useCallback(async () => {
@@ -106,6 +107,9 @@ export default function LogicPathScreen() {
                 id: module.sectionId,
                 title: module.sectionTitle,
                 description: module.sectionDescription,
+                orderIndex: module.sectionOrderIndex,
+                skipRequiresTest: module.sectionSkipRequiresTest,
+                skipTestModuleId: module.sectionSkipTestModuleId,
                 modules: []
             };
         }
@@ -113,7 +117,8 @@ export default function LogicPathScreen() {
         return acc;
     }, {} as Record<string, any>);
 
-    const sections = Object.values(sectionsGrouped);
+    const sections = Object.values(sectionsGrouped).sort((a: any, b: any) => a.orderIndex - b.orderIndex);
+    const currentSection = sections.find((section: any) => section.modules.some((m: any) => m.status === 'CURRENT'));
 
     const completedCount = modules.filter(m => m.status === 'COMPLETED').length;
     const currentCount = modules.filter(m => m.status === 'CURRENT').length;
@@ -146,8 +151,24 @@ export default function LogicPathScreen() {
         }
     };
 
-    const openSkipModal = (sectionId: number, sectionTitle: string) => {
-        setSelectedSection({ id: sectionId, title: sectionTitle });
+    const handleConfirmSkip = () => {
+        if (!selectedSection) return;
+
+        if (selectedSection.requiresTest && selectedSection.skipTestModuleId) {
+            setSkipModalVisible(false);
+            navigation.navigate('Lesson', {
+                moduleId: selectedSection.skipTestModuleId,
+                title: selectedSection.title,
+                skipTestForSectionId: selectedSection.id
+            });
+            return;
+        }
+
+        handleSkipSection();
+    };
+
+    const openSkipModal = (sectionId: number, sectionTitle: string, requiresTest: boolean, skipTestModuleId: number | null) => {
+        setSelectedSection({ id: sectionId, title: sectionTitle, requiresTest, skipTestModuleId });
         setSkipModalVisible(true);
     };
 
@@ -197,12 +218,14 @@ export default function LogicPathScreen() {
                                     <Text className={styles.sectionDescText}>{section.description}</Text>
                                 </View>
 
-                                <TouchableOpacity
-                                  className={styles.skipButton}
-                                  onPress={() => openSkipModal(section.id, section.title)}
-                                >
-                                    <FastForward size={20} color="#00D9FF" />
-                                </TouchableOpacity>
+                                {currentSection && section.id === (currentSection as any).id && (
+                                  <TouchableOpacity
+                                    className={styles.skipButton}
+                                    onPress={() => openSkipModal(section.id, section.title, section.skipRequiresTest, section.skipTestModuleId)}
+                                  >
+                                      <FastForward size={20} color="#00D9FF" />
+                                  </TouchableOpacity>
+                                )}
                             </View>
 
                             {section.modules.map((node: any) => {
@@ -273,9 +296,10 @@ export default function LogicPathScreen() {
           <SkipSectionModal
             visible={skipModalVisible}
             sectionTitle={selectedSection?.title}
+            requiresTest={selectedSection?.requiresTest ?? false}
             isSkipping={isSkipping}
             onClose={() => setSkipModalVisible(false)}
-            onConfirm={handleSkipSection}
+            onConfirm={handleConfirmSkip}
           />
 
           <Modal visible={switcherVisible} transparent animationType="fade" onRequestClose={() => setSwitcherVisible(false)}>

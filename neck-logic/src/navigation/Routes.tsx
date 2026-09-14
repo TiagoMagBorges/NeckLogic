@@ -28,13 +28,14 @@ export type RootStackParamList = {
     AccountSettings: undefined;
     GuitarTuning: undefined;
     TrackSelection: undefined;
-    Lesson: { moduleId: number; title: string };
+    Lesson: { moduleId: number; title: string; skipTestForSectionId?: number };
     LessonFeedback: {
         xpGained: number;
         leveledUp: boolean;
         currentLevel: number;
         mistakesCount: number;
         drillCount: number;
+        isSkipTest?: boolean;
     };
 };
 

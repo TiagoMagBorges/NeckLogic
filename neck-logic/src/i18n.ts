@@ -203,7 +203,9 @@ const resources = {
             },
             modals: {
                 skipTitle: "Skip Section?",
-                skipDesc: "Are you sure you want to mark all content in \"{{section}}\" as completed? You will take a quick test to prove your knowledge.",
+                skipDesc: "Are you sure you want to skip \"{{section}}\"? The next section will be unlocked, but this one won't count as completed.",
+                skipTestDesc: "To skip \"{{section}}\" you need to pass a quick test first. If you pass, the next section is unlocked.",
+                confirmSkip: "Skip",
                 takeTest: "Take Test"
             },
             hooks: {
@@ -211,6 +213,8 @@ const resources = {
                 lessonEmptyDesc: "This lesson has no content yet.",
                 lessonLoadError: "Failed to load the lesson.",
                 lessonSaveError: "Could not save your progress.",
+                skipTestFailedTitle: "Not quite there",
+                skipTestFailedDesc: "You scored {{score}}%, below the required minimum. Practice a bit more and try again.",
                 pathLoadError: "Could not load your path."
             },
             verification: {
@@ -425,7 +429,9 @@ const resources = {
             },
             modals: {
                 skipTitle: "Pular Seção?",
-                skipDesc: "Tem certeza que deseja marcar todo o conteúdo de \"{{section}}\" como concluído? Você fará um teste rápido para provar seus conhecimentos.",
+                skipDesc: "Tem certeza que deseja pular \"{{section}}\"? A próxima seção será desbloqueada, mas esta não vai contar como concluída.",
+                skipTestDesc: "Para pular \"{{section}}\" você precisa passar por um teste rápido. Se passar, a próxima seção é desbloqueada.",
+                confirmSkip: "Pular",
                 takeTest: "Fazer Teste"
             },
             hooks: {
@@ -433,6 +439,8 @@ const resources = {
                 lessonEmptyDesc: "Esta aula ainda não tem conteúdo.",
                 lessonLoadError: "Falha ao carregar a aula.",
                 lessonSaveError: "Não foi possível salvar o progresso.",
+                skipTestFailedTitle: "Quase lá",
+                skipTestFailedDesc: "Você acertou {{score}}%, abaixo do mínimo exigido. Pratique um pouco mais e tente de novo.",
                 pathLoadError: "Não foi possível carregar sua trilha."
             },
             verification: {

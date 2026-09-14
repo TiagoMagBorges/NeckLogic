@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Volume2 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -10,9 +10,9 @@ import { CircleOfFifthsWheel } from '../../components/CircleOfFifthsWheel';
 import { HarmonicFieldWheel } from '../../components/HarmonicFieldWheel';
 import { StaffDisplay, StaffNoteEntry as StaffDisplayEntry } from '../../components/StaffDisplay';
 import { TabDisplay } from '../../components/TabDisplay';
-import { getNoteFromStringAndFret, getNoteWithOctaveFromStringAndFret } from '../../core/MusicEngine';
+import { getNoteFromStringAndFret, getNoteWithOctaveFromStringAndFret, getChordNotes, getFretboardPositionsForNotes } from '../../core/MusicEngine';
 import { playNote, playSequence } from '../../core/AudioEngine';
-import { useLesson, FRETBOARD_EXERCISE_TYPES } from '../../hooks/useLesson';
+import { useLesson, FRETBOARD_EXERCISE_TYPES, SEQUENCE_TYPES } from '../../hooks/useLesson';
 import { FretPosition, StaffNoteEntry } from '../../types/Lesson';
 
 const CORRECT_COLOR = '#10B981';
@@ -32,6 +32,7 @@ export default function LessonScreen() {
         checkResult,
         hasAnswerSelected,
         correctReveal,
+        sequenceNoteStates,
         handleAction,
         handleFretPress,
         handleSelectOption,
@@ -89,12 +90,20 @@ export default function LessonScreen() {
             });
         }
 
+        const isSequential = !!exerciseType && (exerciseType === 'STAFF_READING' || SEQUENCE_TYPES.includes(exerciseType));
+
         if (selectedFrets.length > 0) {
-            selectedFrets.forEach((selectedFret) => {
+            selectedFrets.forEach((selectedFret, index) => {
                 let color = '#00D9FF';
                 let label: string | undefined;
 
-                if (checkResult === 'CORRECT') {
+                if (isSequential && checkResult === 'IDLE') {
+                    const state = sequenceNoteStates[index];
+                    if (state === 'correct' || state === 'incorrect') {
+                        color = state === 'correct' ? CORRECT_COLOR : INCORRECT_COLOR;
+                        label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
+                    }
+                } else if (checkResult === 'CORRECT') {
                     color = CORRECT_COLOR;
                     label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 } else if (checkResult === 'INCORRECT') {
@@ -105,12 +114,12 @@ export default function LessonScreen() {
                     label = getNoteFromStringAndFret(selectedFret.string, selectedFret.fret, tuning);
                 }
 
-                notes.push({ ...selectedFret, color, label });
+                notes.push({ ...selectedFret, color, label, fadeOut: isSequential && checkResult === 'IDLE' });
             });
         }
 
         return notes;
-    }, [currentStep, selectedFrets, checkResult, tuning, correctReveal]);
+    }, [currentStep, selectedFrets, checkResult, tuning, correctReveal, sequenceNoteStates, exerciseType]);
 
     const staffEntries: StaffDisplayEntry[] | undefined = useMemo(() => {
         if (isTheory && illustration?.kind === 'staff') return illustration.notes;
@@ -122,6 +131,57 @@ export default function LessonScreen() {
         if (currentStep?.type === 'DRILL' && exerciseType === 'TAB_READING') return (currentStep.targetSequence as FretPosition[]) ?? [];
         return undefined;
     }, [currentStep, exerciseType]);
+
+    const focusFret = useMemo(() => {
+        if (!currentStep || currentStep.type !== 'DRILL' || !exerciseType) return undefined;
+
+        if (exerciseType === 'MULTIPLE_CHOICE') {
+            return markedPosition?.fret;
+        }
+
+        if (exerciseType === 'CHORD_BUILD' || exerciseType === 'TRIAD_INVERSION') {
+            const root = (currentStep.root as string) ?? 'C';
+            const quality = (currentStep.quality as string) ?? 'major';
+            const positions = getFretboardPositionsForNotes(getChordNotes(root, quality), tuning, 22);
+            return positions.length > 0 ? Math.min(...positions.map((p) => p.fret)) : undefined;
+        }
+
+        if (exerciseType === 'SHAPE_MATCH') {
+            if (Array.isArray(currentStep.targetShape)) {
+                const shape = currentStep.targetShape as FretPosition[];
+                return shape.length > 0 ? Math.min(...shape.map((p) => p.fret)) : undefined;
+            }
+            const targetNotes = Array.isArray(currentStep.targetNotes)
+              ? (currentStep.targetNotes as string[])
+              : currentStep.targetNote
+                ? [currentStep.targetNote as string]
+                : [];
+            if (targetNotes.length === 0) return undefined;
+            const positions = getFretboardPositionsForNotes(targetNotes, tuning, 22);
+            return positions.length > 0 ? Math.min(...positions.map((p) => p.fret)) : undefined;
+        }
+
+        if (exerciseType === 'FIND_ALL_OCCURRENCES') {
+            const targetNote = (currentStep.targetNote as string) ?? '';
+            const maxFret = (currentStep.maxFret as number) ?? 22;
+            const positions = getFretboardPositionsForNotes([targetNote], tuning, maxFret);
+            return positions.length > 0 ? Math.min(...positions.map((p) => p.fret)) : undefined;
+        }
+
+        if (exerciseType === 'SCALE_DEGREES' || exerciseType === 'ARPEGGIO' || exerciseType === 'TAB_READING') {
+            const sequence = (currentStep.targetSequence as FretPosition[]) ?? [];
+            return sequence.length > 0 ? Math.min(...sequence.map((p) => p.fret)) : undefined;
+        }
+
+        if (exerciseType === 'STAFF_READING') {
+            const targets = ((currentStep.staffNotes as StaffNoteEntry[]) ?? [])
+              .map((n) => n.target)
+              .filter((t): t is FretPosition => !!t);
+            return targets.length > 0 ? Math.min(...targets.map((p) => p.fret)) : undefined;
+        }
+
+        return undefined;
+    }, [currentStep, exerciseType, markedPosition, tuning]);
 
     if (loading || !currentStep) {
         return (
@@ -167,7 +227,11 @@ export default function LessonScreen() {
               <View style={{ width: 24 }} />
           </View>
 
-          <View className={styles.contentContainer}>
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 16 }}
+            showsVerticalScrollIndicator={false}
+          >
               <Text className={styles.typeTag}>{currentStep.type.replace('_', ' ')}</Text>
 
               {!!currentStep.imageUrl && (
@@ -220,6 +284,7 @@ export default function LessonScreen() {
                           notes={staffEntries}
                           clef={isTheory ? illustration?.kind === 'staff' ? illustration.clef : 'treble' : (currentStep.clef as 'treble' | 'bass') ?? 'treble'}
                           beatsPerMeasure={isTheory ? illustration?.kind === 'staff' ? illustration.beatsPerMeasure : 4 : (currentStep.beatsPerMeasure as number) ?? 4}
+                          noteStates={!isTheory ? sequenceNoteStates : undefined}
                         />
                     </View>
                 </View>
@@ -228,7 +293,7 @@ export default function LessonScreen() {
               {showTab && tabSequence && tabSequence.length > 0 && (
                 <View className="w-full mt-2 mb-4">
                     <View style={{ marginHorizontal: -24 }}>
-                        <TabDisplay sequence={tabSequence} />
+                        <TabDisplay sequence={tabSequence} noteStates={sequenceNoteStates} />
                     </View>
                 </View>
               )}
@@ -325,12 +390,13 @@ export default function LessonScreen() {
                           frets={displayFrets}
                           notes={notesToRender}
                           onFretPress={currentStep.type === 'DRILL' ? handleFretPressWithSound : undefined}
-                          autoScroll={isTheory}
+                          autoScroll={isTheory || currentStep.type === 'DRILL'}
+                          focusFret={focusFret}
                         />
                     </View>
                 </View>
               )}
-          </View>
+          </ScrollView>
 
           <View className={styles.footer}>
               <TouchableOpacity

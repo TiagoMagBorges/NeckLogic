@@ -182,7 +182,7 @@ export default function AccountSettingsScreen() {
               <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
                   <ChevronLeft size={24} color="#A1A1AA" />
               </TouchableOpacity>
-              <Text className="text-xl font-bold text-foreground">{t('account.title')}</Text>
+              <Text className="font-serif-bold text-xl text-foreground">{t('account.title')}</Text>
           </View>
 
           <ScrollView contentContainerStyle={{ padding: 24 }} showsVerticalScrollIndicator={false}>

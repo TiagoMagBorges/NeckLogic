@@ -8,6 +8,17 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Manrope_400Regular'],
+        'sans-medium': ['Manrope_500Medium'],
+        'sans-semibold': ['Manrope_600SemiBold'],
+        'sans-bold': ['Manrope_700Bold'],
+        'sans-extrabold': ['Manrope_800ExtraBold'],
+        serif: ['Fraunces_600SemiBold'],
+        'serif-bold': ['Fraunces_700Bold'],
+        mono: ['SpaceMono_400Regular'],
+        'mono-bold': ['SpaceMono_700Bold'],
+      },
       colors: {
         background: 'rgb(var(--background) / <alpha-value>)',
         foreground: 'rgb(var(--foreground) / <alpha-value>)',

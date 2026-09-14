@@ -8,21 +8,19 @@ export const styles = {
     progressBarContainer: "flex-1 h-2 bg-muted/20 rounded-full mx-4 overflow-hidden",
     progressBarFill: "h-full bg-primary rounded-full",
 
-    contentContainer: "flex-1 justify-center px-6",
-
-    typeTag: "text-primary text-xs font-bold uppercase tracking-widest mb-4 text-center",
-    title: "text-3xl font-bold text-foreground text-center mb-6",
-    bodyText: "text-lg text-muted-foreground text-center leading-8",
+    typeTag: "font-sans-bold text-primary text-xs uppercase tracking-widest mb-4 text-center",
+    title: "font-serif-bold text-3xl text-foreground text-center mb-6",
+    bodyText: "font-sans text-lg text-muted-foreground text-center leading-8",
 
     imageContainer: "w-full h-48 bg-card rounded-xl mb-8 items-center justify-center border border-border/20",
-    imagePlaceholderText: "text-muted-foreground text-xs",
+    imagePlaceholderText: "font-sans text-muted-foreground text-xs",
 
     footer: "p-6 pb-12",
     nextButton: "w-full bg-primary py-4 rounded-xl items-center shadow-lg",
-    nextButtonText: "text-background font-bold text-lg uppercase tracking-wide",
+    nextButtonText: "font-sans-bold text-background text-lg uppercase tracking-wide",
 
     choiceContainer: "w-full mt-6 gap-3",
-    choiceButtonText: "text-foreground text-base font-semibold text-center",
+    choiceButtonText: "font-sans-semibold text-foreground text-base text-center",
 };
 
 export const getProgressStyle = (current: number, total: number): { width: DimensionValue } => {

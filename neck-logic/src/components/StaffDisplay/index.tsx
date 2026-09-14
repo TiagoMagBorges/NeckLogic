@@ -5,6 +5,7 @@ import { getStaffStep, getDurationBeats, parseNoteWithOctave } from '../../core/
 
 export type ClefType = 'treble' | 'bass';
 export type NoteDuration = 'whole' | 'half' | 'quarter' | 'eighth' | 'sixteenth';
+export type SequenceNoteState = 'correct' | 'incorrect' | 'current' | 'pending';
 
 export interface StaffNoteEntry {
   note?: string;
@@ -16,6 +17,7 @@ interface StaffDisplayProps {
   notes: StaffNoteEntry[];
   clef?: ClefType;
   beatsPerMeasure?: number;
+  noteStates?: SequenceNoteState[];
 }
 
 const STEP_HEIGHT = 7;
@@ -36,6 +38,13 @@ const CLEF_CONFIG: Record<ClefType, { glyph: string; fontSize: number; yOffsetSt
 
 const ACCIDENTAL_SYMBOL: Record<string, string> = { sharp: '♯', flat: '♭' };
 
+const STATE_COLORS: Record<SequenceNoteState, string> = {
+  correct: '#10B981',
+  incorrect: '#EF4444',
+  current: '#A855F7',
+  pending: NOTE_COLOR,
+};
+
 function getLedgerSteps(step: number): number[] {
   const result: number[] = [];
   if (step < 0) {
@@ -46,12 +55,12 @@ function getLedgerSteps(step: number): number[] {
   return result;
 }
 
-function NoteHead({ x, y, duration }: { x: number; y: number; duration: NoteDuration }) {
+function NoteHead({ x, y, duration, color }: { x: number; y: number; duration: NoteDuration; color: string }) {
   const isOpen = duration === 'whole' || duration === 'half';
-  return <Circle cx={x} cy={y} r={5.5} fill={isOpen ? 'none' : NOTE_COLOR} stroke={NOTE_COLOR} strokeWidth={isOpen ? 2 : 0} />;
+  return <Circle cx={x} cy={y} r={5.5} fill={isOpen ? 'none' : color} stroke={color} strokeWidth={isOpen ? 2 : 0} />;
 }
 
-function NoteStem({ x, y, duration, stemUp }: { x: number; y: number; duration: NoteDuration; stemUp: boolean }) {
+function NoteStem({ x, y, duration, stemUp, color }: { x: number; y: number; duration: NoteDuration; stemUp: boolean; color: string }) {
   if (duration === 'whole') return null;
 
   const stemX = x + (stemUp ? 5.5 : -5.5);
@@ -60,13 +69,13 @@ function NoteStem({ x, y, duration, stemUp }: { x: number; y: number; duration: 
 
   return (
     <>
-      <Line x1={stemX} y1={y} x2={stemX} y2={tipY} stroke={NOTE_COLOR} strokeWidth={1.5} />
+      <Line x1={stemX} y1={y} x2={stemX} y2={tipY} stroke={color} strokeWidth={1.5} />
       {Array.from({ length: flagCount }, (_, i) => {
         const flagY = tipY + (stemUp ? i * 7 : -i * 7);
         const d = stemUp
           ? `M ${stemX} ${flagY} Q ${stemX + 10} ${flagY + 4} ${stemX + 8} ${flagY + 14} Q ${stemX + 3} ${flagY + 8} ${stemX} ${flagY + 2} Z`
           : `M ${stemX} ${flagY} Q ${stemX + 10} ${flagY - 4} ${stemX + 8} ${flagY - 14} Q ${stemX + 3} ${flagY - 8} ${stemX} ${flagY - 2} Z`;
-        return <Path key={`flag-${i}`} d={d} fill={NOTE_COLOR} />;
+        return <Path key={`flag-${i}`} d={d} fill={color} />;
       })}
     </>
   );
@@ -106,7 +115,7 @@ function RestGlyph({ x, y, duration }: { x: number; y: number; duration: NoteDur
   }
 }
 
-export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4 }: StaffDisplayProps) {
+export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4, noteStates }: StaffDisplayProps) {
   const baseY = TOP_MARGIN + 8 * STEP_HEIGHT;
   const height = baseY + TOP_MARGIN;
   const clefConfig = CLEF_CONFIG[clef];
@@ -136,11 +145,14 @@ export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4 }: St
     return cumulative + entry.beats;
   }, 0);
 
+  let noteCounter = -1;
   const notePositions = entries.map((entry, index) => {
     const x = beatX(beatOffsets[index]) + NOTE_INSET;
     const parsed = entry.note ? parseNoteWithOctave(entry.note) : null;
     const step = entry.note ? getStaffStep(entry.note, clef) : 0;
-    return { key: `note-${index}`, entry, x, step, parsed };
+    if (entry.note) noteCounter++;
+    const color = entry.note ? STATE_COLORS[noteStates?.[noteCounter] ?? 'pending'] : NOTE_COLOR;
+    return { key: `note-${index}`, entry, x, step, parsed, color };
   });
 
   return (
@@ -175,7 +187,7 @@ export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4 }: St
             {clefConfig.glyph}
           </Text>
 
-          {notePositions.map(({ key, entry, x, step, parsed }) => {
+          {notePositions.map(({ key, entry, x, step, parsed, color }) => {
             if (!entry.note) {
               return <RestGlyph key={key} x={x} y={baseY - 4 * STEP_HEIGHT} duration={entry.duration} />;
             }
@@ -199,12 +211,12 @@ export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4 }: St
                   />
                 ))}
                 {accidentalSymbol && (
-                  <Text x={x - 14} y={y + 5} fontSize={14} fill={NOTE_COLOR} textAnchor="middle">
+                  <Text x={x - 14} y={y + 5} fontSize={14} fill={color} textAnchor="middle">
                     {accidentalSymbol}
                   </Text>
                 )}
-                <NoteStem x={x} y={y} duration={entry.duration} stemUp={stemUp} />
-                <NoteHead x={x} y={y} duration={entry.duration} />
+                <NoteStem x={x} y={y} duration={entry.duration} stemUp={stemUp} color={color} />
+                <NoteHead x={x} y={y} duration={entry.duration} color={color} />
                 <Text x={x} y={y + 22} fontSize={9} fill={LINE_COLOR} textAnchor="middle">
                   {entry.note}
                 </Text>
