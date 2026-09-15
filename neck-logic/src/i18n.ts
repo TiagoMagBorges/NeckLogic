@@ -151,6 +151,20 @@ const resources = {
                 errorTitle: "Error",
                 errorDesc: "Could not skip this section."
             },
+            rating: {
+                cardTitle: "How is this track going?",
+                cardHint: "You've completed enough of this track to leave a rating.",
+                rateButton: "Rate this track",
+                editButton: "Edit your rating",
+                yourRating: "Your rating",
+                modalTitle: "Rate this track",
+                modalHint: "Tap the stars to choose a rating from 1 to 5.",
+                commentPlaceholder: "Leave a comment for the teacher (optional)",
+                submit: "Submit rating",
+                submitting: "Submitting...",
+                submitError: "Could not submit your rating.",
+                submitted: "Thanks for your rating!"
+            },
             lab: {
                 title: "Scale Lab",
                 subtitle: "Explore the neck and build your vocabulary",
@@ -376,6 +390,20 @@ const resources = {
                 warningDesc: "O ID desta seção não foi encontrado.",
                 errorTitle: "Erro",
                 errorDesc: "Não foi possível pular esta seção."
+            },
+            rating: {
+                cardTitle: "O que você achou desta trilha?",
+                cardHint: "Você já concluiu o suficiente desta trilha para deixar uma avaliação.",
+                rateButton: "Avaliar esta trilha",
+                editButton: "Editar sua avaliação",
+                yourRating: "Sua avaliação",
+                modalTitle: "Avalie esta trilha",
+                modalHint: "Toque nas estrelas para escolher uma nota de 1 a 5.",
+                commentPlaceholder: "Deixe um comentário para o professor (opcional)",
+                submit: "Enviar avaliação",
+                submitting: "Enviando...",
+                submitError: "Não foi possível enviar sua avaliação.",
+                submitted: "Obrigado pela sua avaliação!"
             },
             lab: {
                 title: "Scale Lab",
