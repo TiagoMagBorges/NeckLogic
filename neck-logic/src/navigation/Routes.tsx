@@ -17,6 +17,7 @@ import LessonFeedbackScreen from '../screens/LessonFeedback';
 import AccountSettingsScreen from '../screens/AccountSettings';
 import GuitarTuningScreen from '../screens/GuitarTuning';
 import TrackSelectionScreen from '../screens/TrackSelection';
+import CheckoutScreen from '../screens/Checkout';
 
 export type RootStackParamList = {
     Login: undefined;
@@ -28,6 +29,7 @@ export type RootStackParamList = {
     AccountSettings: undefined;
     GuitarTuning: undefined;
     TrackSelection: undefined;
+    Checkout: { trackId: number; trackTitle: string; priceCents: number | null };
     Lesson: { moduleId: number; title: string; skipTestForSectionId?: number };
     LessonFeedback: {
         xpGained: number;
@@ -67,6 +69,7 @@ export default function Routes() {
                       <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
                       <Stack.Screen name="GuitarTuning" component={GuitarTuningScreen} />
                       <Stack.Screen name="TrackSelection" component={TrackSelectionScreen} />
+                      <Stack.Screen name="Checkout" component={CheckoutScreen} />
                       <Stack.Screen name="Lesson" component={LessonScreen} />
                       <Stack.Screen name="LessonFeedback" component={LessonFeedbackScreen} />
                   </>

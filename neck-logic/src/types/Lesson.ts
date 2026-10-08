@@ -26,11 +26,20 @@ export type ClefType = 'treble' | 'bass';
 
 export type NoteDuration = 'whole' | 'half' | 'quarter' | 'eighth' | 'sixteenth';
 
+export type SequenceNoteState = 'correct' | 'incorrect' | 'current' | 'pending';
+
 export interface StaffNoteEntry {
     note?: string;
     duration: NoteDuration;
     dotted?: boolean;
     target?: FretPosition;
+}
+
+export interface TabNoteEntry {
+    string?: number;
+    fret?: number;
+    duration: NoteDuration;
+    dotted?: boolean;
 }
 
 export interface TheoryFretboardIllustration {
@@ -57,11 +66,18 @@ export interface TheoryStaffIllustration {
     notes: StaffNoteEntry[];
 }
 
+export interface TheoryTabIllustration {
+    kind: 'tab';
+    beatsPerMeasure: number;
+    notes: TabNoteEntry[];
+}
+
 export type TheoryIllustration =
   | TheoryFretboardIllustration
   | TheoryCircleIllustration
   | TheoryHarmonicFieldIllustration
-  | TheoryStaffIllustration;
+  | TheoryStaffIllustration
+  | TheoryTabIllustration;
 
 export interface TheoryAudioSequence {
     sequence: StaffNoteEntry[];

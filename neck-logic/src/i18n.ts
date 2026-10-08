@@ -53,7 +53,8 @@ const resources = {
                 modalButton: "Try again",
                 forgotModalTitle: "Reset Password",
                 forgotModalDesc: "Enter your email. If an account exists, we will send a recovery code.",
-                forgotModalSend: "Send Code"
+                forgotModalSend: "Send Code",
+                sessionExpired: "Your session has expired. Please sign in again."
             },
             register: {
                 back: "Back to login",
@@ -150,20 +151,6 @@ const resources = {
                 warningDesc: "The ID for this section was not found.",
                 errorTitle: "Error",
                 errorDesc: "Could not skip this section."
-            },
-            rating: {
-                cardTitle: "How is this track going?",
-                cardHint: "You've completed enough of this track to leave a rating.",
-                rateButton: "Rate this track",
-                editButton: "Edit your rating",
-                yourRating: "Your rating",
-                modalTitle: "Rate this track",
-                modalHint: "Tap the stars to choose a rating from 1 to 5.",
-                commentPlaceholder: "Leave a comment for the teacher (optional)",
-                submit: "Submit rating",
-                submitting: "Submitting...",
-                submitError: "Could not submit your rating.",
-                submitted: "Thanks for your rating!"
             },
             lab: {
                 title: "Scale Lab",
@@ -263,12 +250,19 @@ const resources = {
                 continue: "Continue",
                 errorLoad: "Could not load the tracks.",
                 errorEnroll: "Could not enroll in this track.",
-                confirmPurchaseTitle: "Confirm Purchase",
-                confirmPurchaseDesc: "Confirm purchase for {{price}}? This is a simulation — no real charge will be made.",
-                confirmPurchaseConfirm: "Confirm",
                 switchTrackTitle: "Your Tracks",
                 exploreMore: "Explore more tracks",
-                noEnrolledTracks: "You haven't started any track yet."
+                noEnrolledTracks: "You haven't started any track yet.",
+                checkout: {
+                    simulationTag: "Simulated checkout — no real charge",
+                    priceLabel: "Total",
+                    pay: "Pay",
+                    simulateFailure: "Simulate declined payment",
+                    retry: "Try again",
+                    errorInit: "Could not start checkout for this track.",
+                    errorDeclined: "Payment declined.",
+                    errorConfirm: "Could not confirm the payment."
+                }
             }
         }
     },
@@ -293,7 +287,8 @@ const resources = {
                 modalButton: "Tentar novamente",
                 forgotModalTitle: "Recuperar Senha",
                 forgotModalDesc: "Digite seu e-mail. Se a conta existir, enviaremos um código de recuperação.",
-                forgotModalSend: "Enviar Código"
+                forgotModalSend: "Enviar Código",
+                sessionExpired: "Sua sessão expirou. Faça login novamente."
             },
             register: {
                 back: "Voltar para o login",
@@ -390,20 +385,6 @@ const resources = {
                 warningDesc: "O ID desta seção não foi encontrado.",
                 errorTitle: "Erro",
                 errorDesc: "Não foi possível pular esta seção."
-            },
-            rating: {
-                cardTitle: "O que você achou desta trilha?",
-                cardHint: "Você já concluiu o suficiente desta trilha para deixar uma avaliação.",
-                rateButton: "Avaliar esta trilha",
-                editButton: "Editar sua avaliação",
-                yourRating: "Sua avaliação",
-                modalTitle: "Avalie esta trilha",
-                modalHint: "Toque nas estrelas para escolher uma nota de 1 a 5.",
-                commentPlaceholder: "Deixe um comentário para o professor (opcional)",
-                submit: "Enviar avaliação",
-                submitting: "Enviando...",
-                submitError: "Não foi possível enviar sua avaliação.",
-                submitted: "Obrigado pela sua avaliação!"
             },
             lab: {
                 title: "Scale Lab",
@@ -503,12 +484,19 @@ const resources = {
                 continue: "Continuar",
                 errorLoad: "Não foi possível carregar as trilhas.",
                 errorEnroll: "Não foi possível se matricular nessa trilha.",
-                confirmPurchaseTitle: "Confirmar Compra",
-                confirmPurchaseDesc: "Confirmar a compra por {{price}}? Isso é uma simulação — nenhuma cobrança real será feita.",
-                confirmPurchaseConfirm: "Confirmar",
                 switchTrackTitle: "Suas Trilhas",
                 exploreMore: "Explorar mais trilhas",
-                noEnrolledTracks: "Você ainda não começou nenhuma trilha."
+                noEnrolledTracks: "Você ainda não começou nenhuma trilha.",
+                checkout: {
+                    simulationTag: "Checkout simulado — nenhuma cobrança real",
+                    priceLabel: "Total",
+                    pay: "Pagar",
+                    simulateFailure: "Simular pagamento recusado",
+                    retry: "Tentar novamente",
+                    errorInit: "Não foi possível iniciar o checkout dessa trilha.",
+                    errorDeclined: "Pagamento recusado.",
+                    errorConfirm: "Não foi possível confirmar o pagamento."
+                }
             }
         }
     }

@@ -2,16 +2,8 @@ import React, { useMemo } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Line, Path, Rect, Text } from 'react-native-svg';
 import { getStaffStep, getDurationBeats, parseNoteWithOctave } from '../../core/MusicEngine';
-
-export type ClefType = 'treble' | 'bass';
-export type NoteDuration = 'whole' | 'half' | 'quarter' | 'eighth' | 'sixteenth';
-export type SequenceNoteState = 'correct' | 'incorrect' | 'current' | 'pending';
-
-export interface StaffNoteEntry {
-  note?: string;
-  duration: NoteDuration;
-  dotted?: boolean;
-}
+import { NOTATION_COLORS } from '../../core/theme';
+import { ClefType, NoteDuration, StaffNoteEntry, SequenceNoteState } from '../../types/Lesson';
 
 interface StaffDisplayProps {
   notes: StaffNoteEntry[];
@@ -27,9 +19,9 @@ const LEFT_MARGIN = 48;
 const RIGHT_PADDING = 24;
 const TOP_MARGIN = 44;
 const STEM_LENGTH = 30;
-const NOTE_COLOR = '#00D9FF';
-const LINE_COLOR = '#71717A';
-const BARLINE_COLOR = '#52525B';
+const NOTE_COLOR = NOTATION_COLORS.accent;
+const LINE_COLOR = NOTATION_COLORS.line;
+const BARLINE_COLOR = NOTATION_COLORS.barline;
 
 const CLEF_CONFIG: Record<ClefType, { glyph: string; fontSize: number; yOffsetSteps: number }> = {
   treble: { glyph: '𝄞', fontSize: 26, yOffsetSteps: 3 },
@@ -39,9 +31,9 @@ const CLEF_CONFIG: Record<ClefType, { glyph: string; fontSize: number; yOffsetSt
 const ACCIDENTAL_SYMBOL: Record<string, string> = { sharp: '♯', flat: '♭' };
 
 const STATE_COLORS: Record<SequenceNoteState, string> = {
-  correct: '#10B981',
-  incorrect: '#EF4444',
-  current: '#A855F7',
+  correct: NOTATION_COLORS.correct,
+  incorrect: NOTATION_COLORS.incorrect,
+  current: NOTATION_COLORS.current,
   pending: NOTE_COLOR,
 };
 
@@ -157,7 +149,7 @@ export function StaffDisplay({ notes, clef = 'treble', beatsPerMeasure = 4, note
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} className="w-full">
-      <View style={{ width, height, backgroundColor: '#18181B', borderRadius: 12 }}>
+      <View style={{ width, height, backgroundColor: NOTATION_COLORS.background, borderRadius: 12 }}>
         <Svg width={width} height={height}>
           {[0, 2, 4, 6, 8].map((step) => (
             <Line
