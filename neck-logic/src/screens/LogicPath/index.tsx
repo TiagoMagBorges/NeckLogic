@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, Lock, FastForward, Layers, Compass } from 'lucide-react-native';
+import { Check, Lock, FastForward, Layers, Compass, Star } from 'lucide-react-native';
 import { useNavigation, useRoute, RouteProp, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -16,7 +16,9 @@ import { MainTabParamList } from '../../navigation/MainTabs';
 import { api } from '../../services/api';
 import { StorageService, StorageKeys } from '../../services/storage';
 import { TrackDTO } from '../../types/Track';
+import { MyRatingDTO } from '../../types/Rating';
 import { SkipSectionModal } from '../../components/SkipSectionModal';
+import { RateTrackModal } from '../../components/RateTrackModal';
 
 type LogicPathScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'LogicPath'>,
@@ -42,6 +44,11 @@ export default function LogicPathScreen() {
     const [enrolledTracks, setEnrolledTracks] = useState<TrackDTO[]>([]);
     const [loadingTracks, setLoadingTracks] = useState(false);
 
+    const [myRating, setMyRating] = useState<MyRatingDTO | null>(null);
+    const [ratingModalVisible, setRatingModalVisible] = useState(false);
+    const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+    const [ratingError, setRatingError] = useState<string | null>(null);
+
     useEffect(() => {
         if (route.params?.trackId) {
             setActiveTrackId(route.params.trackId);
@@ -66,6 +73,37 @@ export default function LogicPathScreen() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const fetchMyRating = useCallback(async (trackId: number) => {
+        try {
+            const response = await api.get<MyRatingDTO>(`/tracks/${trackId}/rating/mine`);
+            setMyRating(response.data);
+        } catch (error) {
+            setMyRating(null);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeTrackId) {
+            fetchMyRating(activeTrackId);
+        }
+    }, [activeTrackId, fetchMyRating]);
+
+    async function handleSubmitRating(stars: number, comment: string) {
+        if (!activeTrackId) return;
+
+        setIsSubmittingRating(true);
+        setRatingError(null);
+        try {
+            const response = await api.post<MyRatingDTO>(`/tracks/${activeTrackId}/rating`, { stars, comment });
+            setMyRating(response.data);
+            setRatingModalVisible(false);
+        } catch (error) {
+            setRatingError(t('rating.submitError'));
+        } finally {
+            setIsSubmittingRating(false);
+        }
+    }
 
     const openSwitcher = useCallback(async () => {
         setSwitcherVisible(true);
@@ -290,8 +328,58 @@ export default function LogicPathScreen() {
                           </View>
                       </View>
                   </View>
+
+                  {myRating?.canRate && (
+                    <View className={styles.statsCard}>
+                        <Text className={styles.statsTitle}>{t('rating.cardTitle')}</Text>
+
+                        {myRating.stars ? (
+                          <View className="items-center gap-3">
+                              <View className="flex-row gap-1">
+                                  {[1, 2, 3, 4, 5].map((value) => (
+                                    <Star
+                                      key={value}
+                                      size={22}
+                                      color="#FBBF24"
+                                      fill={value <= (myRating.stars ?? 0) ? '#FBBF24' : 'transparent'}
+                                    />
+                                  ))}
+                              </View>
+                              <TouchableOpacity
+                                className="py-2.5 px-5 rounded-xl bg-primary/10 border border-primary/20"
+                                onPress={() => setRatingModalVisible(true)}
+                              >
+                                  <Text className="font-sans-bold text-primary text-sm">{t('rating.editButton')}</Text>
+                              </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <View className="items-center gap-3">
+                              <Text className="font-sans text-muted-foreground text-sm text-center">
+                                  {t('rating.cardHint')}
+                              </Text>
+                              <TouchableOpacity
+                                className="flex-row items-center gap-2 py-3 px-6 rounded-xl bg-primary"
+                                onPress={() => setRatingModalVisible(true)}
+                              >
+                                  <Star size={16} color="#121212" />
+                                  <Text className="font-sans-bold text-[#121212]">{t('rating.rateButton')}</Text>
+                              </TouchableOpacity>
+                          </View>
+                        )}
+                    </View>
+                  )}
               </View>
           </ScrollView>
+
+          <RateTrackModal
+            visible={ratingModalVisible}
+            initialStars={myRating?.stars ?? null}
+            initialComment={myRating?.comment ?? null}
+            isSubmitting={isSubmittingRating}
+            error={ratingError}
+            onClose={() => setRatingModalVisible(false)}
+            onSubmit={handleSubmitRating}
+          />
 
           <SkipSectionModal
             visible={skipModalVisible}

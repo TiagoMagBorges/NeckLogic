@@ -9,15 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import { TrackDTO } from '../../types/Track';
 import { RootStackParamList } from '../../navigation/Routes';
+import { formatPrice } from '../../utils/formatPrice';
 import { styles } from './styles';
-
-function formatPrice(priceCents: number | null, language: string): string {
-  const value = (priceCents ?? 0) / 100;
-  if (language.startsWith('pt')) {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  }
-  return `$${value.toFixed(2)}`;
-}
 
 export default function TrackSelectionScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -77,14 +70,7 @@ export default function TrackSelectionScreen() {
 
   function handleSelect(track: TrackDTO) {
     if (!track.enrolled && track.paid) {
-      Alert.alert(
-        t('tracks.confirmPurchaseTitle'),
-        t('tracks.confirmPurchaseDesc', { price: formatPrice(track.priceCents, i18n.language) }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('tracks.confirmPurchaseConfirm'), onPress: () => enrollAndOpen(track) },
-        ]
-      );
+      navigation.navigate('Checkout', { trackId: track.id, trackTitle: track.title, priceCents: track.priceCents });
       return;
     }
 

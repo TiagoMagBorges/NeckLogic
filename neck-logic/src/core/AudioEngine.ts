@@ -1,6 +1,6 @@
 import { createAudioPlayer, AudioPlayer } from 'expo-audio';
-import { getAbsoluteSemitone, getDurationBeats } from './MusicEngine';
-import { StaffNoteEntry } from '../types/Lesson';
+import { getAbsoluteSemitone, getDurationBeats, getNoteWithOctaveFromStringAndFret } from './MusicEngine';
+import { StaffNoteEntry, TabNoteEntry } from '../types/Lesson';
 
 const NOTE_ASSETS: Record<string, number> = {
   E2: require('../../assets/audio/guitar-acoustic/E2.mp3'),
@@ -82,6 +82,22 @@ export function playSequence(sequence: StaffNoteEntry[], tempo: number = 100) {
 
     if (entry.note) {
       const noteAtTime = entry.note;
+      setTimeout(() => playNote(noteAtTime), elapsed);
+    }
+
+    elapsed += beats * msPerBeat;
+  });
+}
+
+export function playTabSequence(sequence: TabNoteEntry[], tuning: string[], tempo: number = 100) {
+  const msPerBeat = 60000 / tempo;
+  let elapsed = 0;
+
+  sequence.forEach((entry) => {
+    const beats = getDurationBeats(entry.duration, entry.dotted);
+
+    if (entry.string !== undefined && entry.fret !== undefined) {
+      const noteAtTime = getNoteWithOctaveFromStringAndFret(entry.string, entry.fret, tuning);
       setTimeout(() => playNote(noteAtTime), elapsed);
     }
 

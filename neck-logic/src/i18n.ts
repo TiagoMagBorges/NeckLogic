@@ -53,7 +53,8 @@ const resources = {
                 modalButton: "Try again",
                 forgotModalTitle: "Reset Password",
                 forgotModalDesc: "Enter your email. If an account exists, we will send a recovery code.",
-                forgotModalSend: "Send Code"
+                forgotModalSend: "Send Code",
+                sessionExpired: "Your session has expired. Please sign in again."
             },
             register: {
                 back: "Back to login",
@@ -249,12 +250,19 @@ const resources = {
                 continue: "Continue",
                 errorLoad: "Could not load the tracks.",
                 errorEnroll: "Could not enroll in this track.",
-                confirmPurchaseTitle: "Confirm Purchase",
-                confirmPurchaseDesc: "Confirm purchase for {{price}}? This is a simulation — no real charge will be made.",
-                confirmPurchaseConfirm: "Confirm",
                 switchTrackTitle: "Your Tracks",
                 exploreMore: "Explore more tracks",
-                noEnrolledTracks: "You haven't started any track yet."
+                noEnrolledTracks: "You haven't started any track yet.",
+                checkout: {
+                    simulationTag: "Simulated checkout — no real charge",
+                    priceLabel: "Total",
+                    pay: "Pay",
+                    simulateFailure: "Simulate declined payment",
+                    retry: "Try again",
+                    errorInit: "Could not start checkout for this track.",
+                    errorDeclined: "Payment declined.",
+                    errorConfirm: "Could not confirm the payment."
+                }
             }
         }
     },
@@ -279,7 +287,8 @@ const resources = {
                 modalButton: "Tentar novamente",
                 forgotModalTitle: "Recuperar Senha",
                 forgotModalDesc: "Digite seu e-mail. Se a conta existir, enviaremos um código de recuperação.",
-                forgotModalSend: "Enviar Código"
+                forgotModalSend: "Enviar Código",
+                sessionExpired: "Sua sessão expirou. Faça login novamente."
             },
             register: {
                 back: "Voltar para o login",
@@ -475,12 +484,19 @@ const resources = {
                 continue: "Continuar",
                 errorLoad: "Não foi possível carregar as trilhas.",
                 errorEnroll: "Não foi possível se matricular nessa trilha.",
-                confirmPurchaseTitle: "Confirmar Compra",
-                confirmPurchaseDesc: "Confirmar a compra por {{price}}? Isso é uma simulação — nenhuma cobrança real será feita.",
-                confirmPurchaseConfirm: "Confirmar",
                 switchTrackTitle: "Suas Trilhas",
                 exploreMore: "Explorar mais trilhas",
-                noEnrolledTracks: "Você ainda não começou nenhuma trilha."
+                noEnrolledTracks: "Você ainda não começou nenhuma trilha.",
+                checkout: {
+                    simulationTag: "Checkout simulado — nenhuma cobrança real",
+                    priceLabel: "Total",
+                    pay: "Pagar",
+                    simulateFailure: "Simular pagamento recusado",
+                    retry: "Tentar novamente",
+                    errorInit: "Não foi possível iniciar o checkout dessa trilha.",
+                    errorDeclined: "Pagamento recusado.",
+                    errorConfirm: "Não foi possível confirmar o pagamento."
+                }
             }
         }
     }

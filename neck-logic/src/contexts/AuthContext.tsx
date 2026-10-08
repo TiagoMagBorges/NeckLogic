@@ -1,8 +1,10 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { api } from '../services/api';
+import { Alert } from 'react-native';
+import { api, setSessionExpiredHandler } from '../services/api';
 import { StorageService, StorageKeys } from '../services/storage';
 import { TokenStorage } from '../services/secureTokenStorage';
 import { User } from '../types/User';
+import i18n from '../i18n';
 
 interface AuthContextData {
     signed: boolean;
@@ -44,6 +46,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         loadStorageData();
+    }, []);
+
+    useEffect(() => {
+        setSessionExpiredHandler(() => {
+            clearAuthState();
+            Alert.alert(i18n.t('login.modalTitle'), i18n.t('login.sessionExpired'));
+        });
+
+        return () => setSessionExpiredHandler(null);
     }, []);
 
     async function setAuthState(token: string, userData?: User) {

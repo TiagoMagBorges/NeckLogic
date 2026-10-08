@@ -41,13 +41,17 @@ export function getNoteFromStringAndFret(stringNum: number, fret: number, tuning
     return getNoteAtFret(tuning[arrayIndex], fret);
 }
 
-export function getNoteWithOctaveFromStringAndFret(stringNum: number, fret: number, tuning: string[]): string {
+export function getMidiNote(stringNum: number, fret: number, tuning: string[]): number {
     const arrayIndex = tuning.length - stringNum;
     const openNote = tuning[arrayIndex];
     const openOctave = OPEN_STRING_OCTAVES[arrayIndex] ?? 3;
     const openIndex = NOTE_INDEX_MAP.get(openNote.toUpperCase()) ?? 0;
 
-    const absoluteSemitone = openOctave * 12 + openIndex + fret;
+    return openOctave * 12 + openIndex + fret;
+}
+
+export function getNoteWithOctaveFromStringAndFret(stringNum: number, fret: number, tuning: string[]): string {
+    const absoluteSemitone = getMidiNote(stringNum, fret, tuning);
     const note = CHROMATIC_SCALE[((absoluteSemitone % 12) + 12) % 12];
     const octave = Math.floor(absoluteSemitone / 12);
 
